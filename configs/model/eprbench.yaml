@@ -13,11 +13,11 @@ scheduler:
 
 net:
     _target_: src.models.components.network.SGVPRNet
-    pretrained_foundation: false
-    foundation_model_path: null
+    pretrained_foundation: true
+    foundation_model_path: ${paths.root_dir}/model/dinov2_vitb14_pretrain.pth
 
 # Loss parameters
-lambda_contrast: 0.1
+lambda_contrast: 0.25
 temperature: 0.07
 
 # Text toggle

@@ -143,6 +143,12 @@ dmypy.json
 *.h5
 *.tar
 *.tar.gz
+*.ckpt
+*.pth
+*.safetensors
+
+# Pretrained weights / checkpoints directory
+/model/
 
 # Lightning-Hydra-Template
 configs/local/default.yaml
@@ -150,5 +156,18 @@ configs/local/default.yaml
 /logs/
 .env
 
+# Logger artifacts
+wandb/
+mlruns/
+
 # Aim logging
 .aim
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor temp files
+*.swp
+*~
+*.bak

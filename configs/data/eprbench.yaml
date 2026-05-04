@@ -1,0 +1,18 @@
+_target_: src.data.eprbench_datamodule.EPRBenchDataModule
+
+dataset_folder: ${paths.data_dir}/EventVPR
+train_batch_size: 8
+infer_batch_size: 8
+num_workers: 4
+pin_memory: true
+
+# Text description parameters
+use_text: true
+text_folder: null  # defaults to dataset_folder/scene_descriptions
+
+# Training sampling parameters
+img_per_place: 5
+min_img_per_place: 5
+
+# Image preprocessing
+resize: [224, 224]

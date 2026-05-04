@@ -1,14 +1,14 @@
 # @package _global_
 
 defaults:
-  - _self_
-  - data: mnist # choose datamodule with `test_dataloader()` for evaluation
-  - model: mnist
-  - logger: null
-  - trainer: default
-  - paths: default
-  - extras: default
-  - hydra: default
+    - _self_
+    - data: eprbench # choose datamodule with `test_dataloader()` for evaluation
+    - model: eprbench
+    - logger: null
+    - trainer: default
+    - paths: default
+    - extras: default
+    - hydra: default
 
 task_name: "eval"
 

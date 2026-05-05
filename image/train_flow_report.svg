@@ -1,0 +1,312 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 2200" width="1400" height="2200">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f3460;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradData" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e94560;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#c23a51;stop-opacity:0.9" />
+    </linearGradient>
+    <linearGradient id="gradModel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#0099cc;stop-opacity:0.9" />
+    </linearGradient>
+    <linearGradient id="gradTrain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f4d03f;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#d4ac0d;stop-opacity:0.9" />
+    </linearGradient>
+    <linearGradient id="gradEval" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#58d68d;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#27ae60;stop-opacity:0.9" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#aaa"/>
+    </marker>
+    <marker id="arrowData" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#e94560"/>
+    </marker>
+    <marker id="arrowModel" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#00d9ff"/>
+    </marker>
+    <marker id="arrowTrain" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f4d03f"/>
+    </marker>
+    <marker id="arrowEval" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#58d68d"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="2200" fill="url(#grad1)"/>
+
+  <!-- Title -->
+  <rect x="50" y="20" width="1300" height="60" rx="10" fill="#0f3460" stroke="#00d9ff" stroke-width="2"/>
+  <text x="700" y="58" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="bold">EPRBench (SGVPR) Training Pipeline Architecture</text>
+
+  <!-- ==================== SECTION 1: TRAIN.PY ORCHESTRATION ==================== -->
+  <rect x="50" y="100" width="1300" height="200" rx="15" fill="url(#grad2)" stroke="#f4d03f" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="130" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">1. TRAIN.PY — Hydra Lightning Orchestrator</text>
+
+  <rect x="80" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="170" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">Hydra Config</text>
+  <text x="170" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">configs/train.yaml</text>
+
+  <rect x="290" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="380" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">DataModule</text>
+  <text x="380" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">EPRBenchDataModule</text>
+
+  <rect x="500" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="590" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">LightningModule</text>
+  <text x="590" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">EPRBenchLitModule</text>
+
+  <rect x="710" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="800" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">Callbacks</text>
+  <text x="800" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Checkpoint, Logger, etc.</text>
+
+  <rect x="920" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="1010" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">Loggers</text>
+  <text x="1010" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">TensorBoard, WandB</text>
+
+  <rect x="1130" y="145" width="180" height="50" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="1220" y="165" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">Trainer</text>
+  <text x="1220" y="182" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">PyTorch Lightning</text>
+
+  <line x1="260" y1="170" x2="290" y2="170" stroke="#f4d03f" stroke-width="2" marker-end="url(#arrowTrain)"/>
+  <line x1="470" y1="170" x2="500" y2="170" stroke="#f4d03f" stroke-width="2" marker-end="url(#arrowTrain)"/>
+  <line x1="680" y1="170" x2="710" y2="170" stroke="#f4d03f" stroke-width="2" marker-end="url(#arrowTrain)"/>
+  <line x1="890" y1="170" x2="920" y2="170" stroke="#f4d03f" stroke-width="2" marker-end="url(#arrowTrain)"/>
+  <line x1="1100" y1="170" x2="1130" y2="170" stroke="#f4d03f" stroke-width="2" marker-end="url(#arrowTrain)"/>
+
+  <rect x="80" y="215" width="1230" height="65" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="95" y="235" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="bold">Execution Flow:</text>
+  <text x="95" y="252" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">trainer.fit(model, datamodule) → training_step() per batch → on_validation_epoch_end() per epoch → trainer.test() with best ckpt</text>
+  <text x="95" y="268" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="10">Seed setup | Hyperparameter logging | Optimized metric return for Hydra sweeps</text>
+
+  <!-- ==================== SECTION 2: DATA PIPELINE ==================== -->
+  <rect x="50" y="320" width="400" height="420" rx="15" fill="url(#grad2)" stroke="#e94560" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="350" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">2. Data Pipeline</text>
+
+  <rect x="80" y="365" width="340" height="55" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1.5"/>
+  <text x="250" y="385" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">EventVPRDataset</text>
+  <text x="250" y="402" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Event-based Visual Place Recognition</text>
+  <text x="250" y="415" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">data/EventVPR/  →  train / test splits</text>
+
+  <rect x="80" y="435" width="160" height="90" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="160" y="455" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Train Split</text>
+  <text x="160" y="472" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Sample img_per_place</text>
+  <text x="160" y="487" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">images per place_id</text>
+  <text x="160" y="502" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">BS=8, Shuffle=True</text>
+  <text x="160" y="517" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">+ scene text descriptions</text>
+
+  <rect x="260" y="435" width="160" height="90" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="340" y="455" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Val/Test Split</text>
+  <text x="340" y="472" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">database + queries</text>
+  <text x="340" y="487" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">all images indexed</text>
+  <text x="340" y="502" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">BS=8, Shuffle=False</text>
+  <text x="340" y="517" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">+ per-image text</text>
+
+  <rect x="80" y="540" width="340" height="60" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="250" y="560" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="bold">Transform Pipeline</text>
+  <text x="250" y="577" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Resize(224,224) → ToTensor → Normalize(ImageNet)</text>
+  <text x="250" y="592" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Text: multi-format filename fallback loading</text>
+
+  <rect x="80" y="615" width="340" height="105" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="250" y="635" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">EPRBenchDataModule</text>
+  <text x="95" y="655" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• setup(): creates train/val/test datasets</text>
+  <text x="95" y="672" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• train_dataloader(): shuffle=True, drop_last=False</text>
+  <text x="95" y="689" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• val/test_dataloader(): shuffle=False</text>
+  <text x="95" y="706" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Hparams: batch_size, num_workers, pin_memory</text>
+
+  <!-- ==================== SECTION 3: MODEL ARCHITECTURE ==================== -->
+  <rect x="480" y="320" width="870" height="680" rx="15" fill="url(#grad2)" stroke="#00d9ff" stroke-width="2" opacity="0.3"/>
+  <text x="510" y="350" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">3. Model Architecture — SGVPRNet + EPRBenchLitModule</text>
+
+  <!-- CLIP Text Encoder -->
+  <rect x="510" y="365" width="250" height="110" rx="8" fill="#1a1a2e" stroke="#00d9ff" stroke-width="1.5"/>
+  <text x="635" y="385" text-anchor="middle" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="bold">CLIPTextEncoder (Frozen)</text>
+  <text x="635" y="402" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">OpenCLIP ViT-B-16 (laion2b_s34b_b88k)</text>
+  <text x="635" y="417" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Sentence: (B, 768) L2-normalized</text>
+  <text x="635" y="432" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Tokens: (B, L, 768) + mask</text>
+  <text x="635" y="450" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">text_proj: Linear→GELU→LayerNorm</text>
+
+  <!-- SGVPRNet Box -->
+  <rect x="790" y="365" width="540" height="620" rx="12" fill="#0a0a1a" stroke="#00d9ff" stroke-width="1.5"/>
+  <text x="1060" y="385" text-anchor="middle" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold">SGVPRNet</text>
+
+  <!-- Backbone -->
+  <rect x="810" y="400" width="500" height="110" rx="8" fill="#1a1a2e" stroke="#00d9ff" stroke-width="1"/>
+  <text x="1060" y="420" text-anchor="middle" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Backbone: DINOv2 ViT-Base</text>
+  <text x="1060" y="437" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">patch_size=14, img_size=518, embed_dim=768, depth=12</text>
+  <text x="1060" y="452" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Pretrained: dinov2_vitb14_pretrain.pth</text>
+  <text x="1060" y="467" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Outputs: x_norm_clstoken (B,768) + x_prenorm (B,1370,768)</text>
+  <text x="1060" y="485" text-anchor="middle" fill="#ff6b6b" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="bold">Frozen except Adapter modules</text>
+  <text x="1060" y="500" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Adapter init: D_fc2→0, conv→1e-5</text>
+
+  <!-- Text-Patch Fusion -->
+  <rect x="510" y="495" width="250" height="100" rx="8" fill="#1a1a2e" stroke="#ff9f43" stroke-width="1.5"/>
+  <text x="635" y="515" text-anchor="middle" fill="#ff9f43" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Text-Patch Fusion (Optional)</text>
+  <text x="635" y="532" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">1. Cosine sim: patch_tokens ↔ text_tokens</text>
+  <text x="635" y="547" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">2. Top-k selection (mask_keep_ratio=0.25)</text>
+  <text x="635" y="562" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">3. Enhance: x_patch += α × (x_patch × text_feat)</text>
+  <text x="635" y="580" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">text_alpha_patch = 0.5 (learnable)</text>
+
+  <line x1="635" y1="475" x2="635" y2="495" stroke="#ff9f43" stroke-width="1.5" marker-end="url(#arrowModel)"/>
+
+  <!-- Multi-scale GeM Aggregation -->
+  <rect x="810" y="530" width="500" height="140" rx="8" fill="#1a1a2e" stroke="#00d9ff" stroke-width="1"/>
+  <text x="1060" y="550" text-anchor="middle" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Multi-Scale GeM Aggregation</text>
+  <text x="1060" y="567" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Patch map: 37×37 tokens → reshape to 16×16 spatial (W×H)</text>
+  <text x="1060" y="582" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Level 1 (Global): x0 = cls_token → (B, 768)</text>
+  <text x="1060" y="597" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Level 2 (4 regions): 8×8 quadrants → 4×(B, 768)</text>
+  <text x="1060" y="612" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Level 3 (9 regions): 5×5/6×6/5×5 grid → 9×(B, 768)</text>
+  <text x="1060" y="630" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">GeM: p=3 (learnable), eps=1e-6 → L2Norm → Flatten</text>
+  <text x="1060" y="645" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Each region: avg_pool2d(x^p)^(1/p) → normalized descriptor</text>
+
+  <!-- Cross-image Encoder -->
+  <rect x="810" y="690" width="500" height="85" rx="8" fill="#1a1a2e" stroke="#00d9ff" stroke-width="1"/>
+  <text x="1060" y="710" text-anchor="middle" fill="#00d9ff" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Cross-Image Transformer Encoder</text>
+  <text x="1060" y="727" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Input: 14 descriptors stacked → (B, 14, 768)</text>
+  <text x="1060" y="742" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">2-layer TransformerEncoderLayer (d=768, nhead=16, ff=2048)</text>
+  <text x="1060" y="757" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">batch_first=False → encodes across batch dimension!</text>
+  <text x="1060" y="770" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Output: flatten → (B, 10752) → L2 normalize</text>
+
+  <!-- Output descriptor -->
+  <rect x="1060" y="790" width="250" height="45" rx="8" fill="#0a3a3a" stroke="#58d68d" stroke-width="2"/>
+  <text x="1185" y="810" text-anchor="middle" fill="#58d68d" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold">Descriptor: (B, 10752)</text>
+  <text x="1185" y="828" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">14 regions × 768 dim, L2-normalized</text>
+
+  <!-- Arrows inside model -->
+  <line x1="1060" y1="510" x2="1060" y2="530" stroke="#00d9ff" stroke-width="1.5" marker-end="url(#arrowModel)"/>
+  <line x1="1060" y1="670" x2="1060" y2="690" stroke="#00d9ff" stroke-width="1.5" marker-end="url(#arrowModel)"/>
+  <line x1="1060" y1="775" x2="1060" y2="790" stroke="#00d9ff" stroke-width="1.5" marker-end="url(#arrowModel)"/>
+  <line x1="760" y1="545" x2="810" y2="545" stroke="#ff9f43" stroke-width="1.5" marker-end="url(#arrowModel)"/>
+
+  <!-- ==================== SECTION 4: TRAINING STEP ==================== -->
+  <rect x="50" y="760" width="400" height="240" rx="15" fill="url(#grad2)" stroke="#f4d03f" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="790" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">4. Training Step</text>
+
+  <rect x="80" y="805" width="340" height="180" rx="8" fill="#1a1a2e" stroke="#f4d03f" stroke-width="1.5"/>
+  <text x="250" y="825" text-anchor="middle" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">training_step(batch)</text>
+  <text x="95" y="845" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">1. Unpack: images (BS,N,C,H,W), place_id, text</text>
+  <text x="95" y="860" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">2. Flatten: view(BS*N, C, H, W), labels view(BS*N)</text>
+  <text x="95" y="875" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">3. Text encoding (if use_text):</text>
+  <text x="110" y="888" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">   - CLIPTextEncoder → sentence &amp; token embeddings</text>
+  <text x="95" y="903" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">4. Forward: SGVPRNet(images, text, tokens, mask)</text>
+  <text x="95" y="918" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">5. Aggregate per-place features (mean over N)</text>
+  <text x="95" y="933" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">6. Compute loss → backward → optimizer step</text>
+  <text x="95" y="950" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Metrics logged: loss, tri_loss, i2t_loss, t2i_loss</text>
+  <text x="95" y="965" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">on_epoch=True, prog_bar for total loss &amp; R@5</text>
+
+  <!-- ==================== SECTION 5: LOSS FUNCTION ==================== -->
+  <rect x="50" y="1020" width="400" height="200" rx="15" fill="url(#grad2)" stroke="#ff6b6b" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="1050" fill="#ff6b6b" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">5. Loss Function</text>
+
+  <rect x="80" y="1065" width="340" height="140" rx="8" fill="#1a1a2e" stroke="#ff6b6b" stroke-width="1.5"/>
+  <text x="250" y="1085" text-anchor="middle" fill="#ff6b6b" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Combined Loss</text>
+  <text x="95" y="1105" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Triplet Loss (MultiSimilarity):</text>
+  <text x="110" y="1120" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">miner + MultiSimilarityLoss (α=1, β=50, DotProduct)</text>
+  <text x="95" y="1135" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Image-Text Contrastive (optional):</text>
+  <text x="110" y="1150" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">logits = (img_norm @ txt_norm.T) / temperature</text>
+  <text x="110" y="1162" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">loss_i2t = CE(logits, targets), loss_t2i = CE(logits.T, targets)</text>
+  <text x="95" y="1180" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="bold">Total = tri_loss + λ_contrast × (loss_i2t + loss_t2i)</text>
+  <text x="95" y="1195" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">λ=0.1, temperature=0.07</text>
+
+  <!-- ==================== SECTION 6: OPTIMIZER &amp; SCHEDULER ==================== -->
+  <rect x="50" y="1240" width="400" height="160" rx="15" fill="url(#grad2)" stroke="#9b59b6" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="1270" fill="#9b59b6" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">6. Optimizer &amp; Scheduler</text>
+
+  <rect x="80" y="1285" width="340" height="100" rx="8" fill="#1a1a2e" stroke="#9b59b6" stroke-width="1.5"/>
+  <text x="250" y="1305" text-anchor="middle" fill="#9b59b6" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Adam + StepLR</text>
+  <text x="95" y="1325" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Optimizer: Adam(lr=1e-4, weight_decay=1e-3)</text>
+  <text x="95" y="1340" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Param groups: [{model_params}, {text_params}]</text>
+  <text x="95" y="1355" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Scheduler: StepLR(step_size=steps_per_epoch×3, γ=0.5)</text>
+  <text x="95" y="1370" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Interval: per step (batch), not per epoch</text>
+
+  <!-- ==================== SECTION 7: VALIDATION / TEST ==================== -->
+  <rect x="480" y="1020" width="870" height="380" rx="15" fill="url(#grad2)" stroke="#58d68d" stroke-width="2" opacity="0.3"/>
+  <text x="510" y="1050" fill="#58d68d" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">7. Validation &amp; Test Pipeline</text>
+
+  <rect x="510" y="1065" width="400" height="170" rx="8" fill="#1a1a2e" stroke="#58d68d" stroke-width="1.5"/>
+  <text x="710" y="1085" text-anchor="middle" fill="#58d68d" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">validation_step / test_step</text>
+  <text x="525" y="1105" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">1. Forward pass with text (if enabled) → extract features</text>
+  <text x="525" y="1120" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">2. CPU offload: features.cpu(), indices.cpu()</text>
+  <text x="525" y="1135" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">3. Accumulate in lists: _val_features, _val_indices</text>
+  <text x="525" y="1150" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">4. on_validation_epoch_end / on_test_epoch_end:</text>
+  <text x="540" y="1165" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">   - Concatenate all features → numpy</text>
+  <text x="540" y="1180" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">   - Sort by original dataset indices</text>
+  <text x="540" y="1195" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">   - Split: database[:N_db], queries[N_db:]</text>
+  <text x="540" y="1210" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">   - FAISS IndexFlatL2 search</text>
+
+  <rect x="940" y="1065" width="390" height="170" rx="8" fill="#1a1a2e" stroke="#58d68d" stroke-width="1.5"/>
+  <text x="1135" y="1085" text-anchor="middle" fill="#58d68d" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Recall Computation</text>
+  <text x="955" y="1105" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">FAISS IndexFlatL2(d=10752)</text>
+  <text x="955" y="1120" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Search: queries → top-k nearest database</text>
+  <text x="955" y="1135" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">k = max([1, 5, 10, 100]) = 100</text>
+  <text x="955" y="1155" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">For each query:</text>
+  <text x="970" y="1170" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">- Check if any pred[:n] ∈ positives_per_query</text>
+  <text x="970" y="1185" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">- Increment recalls[i:] on first match</text>
+  <text x="955" y="1205" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Final: recalls = counts / queries_num × 100</text>
+  <text x="955" y="1220" fill="#f4d03f" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="bold">Metrics: R@1, R@5, R@10, R@100</text>
+
+  <!-- Eval metrics summary -->
+  <rect x="510" y="1255" width="820" height="125" rx="8" fill="#0a3a3a" stroke="#58d68d" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="920" y="1275" text-anchor="middle" fill="#58d68d" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Evaluation Flow Summary</text>
+  <text x="525" y="1295" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Database features added to FAISS → Query features searched → Top-100 predictions → Compare with ground-truth positives</text>
+  <text x="525" y="1312" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Best checkpoint selection: val/R@5_best (MaxMetric tracked across epochs)</text>
+  <text x="525" y="1329" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">Test uses best ckpt path: trainer.checkpoint_callback.best_model_path</text>
+  <text x="525" y="1346" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Positives defined by matching place_id between query and database images</text>
+  <text x="525" y="1363" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Efficient RAM testing option available; PCA dimensionality reduction optional (null=disabled)</text>
+
+  <!-- ==================== SECTION 8: KEY DESIGN DECISIONS ==================== -->
+  <rect x="50" y="1420" width="1300" height="350" rx="15" fill="url(#grad2)" stroke="#e94560" stroke-width="2" opacity="0.3"/>
+  <text x="80" y="1450" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="bold">8. Key Design Decisions &amp; Architecture Notes</text>
+
+  <rect x="80" y="1465" width="390" height="140" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="275" y="1485" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Multi-Scale Representation</text>
+  <text x="95" y="1505" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• 3-level spatial pyramid: 1×1 + 2×2 + 3×3</text>
+  <text x="95" y="1520" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Each region pooled with learnable GeM (p=3)</text>
+  <text x="95" y="1535" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• 14 descriptors capture global-to-local info</text>
+  <text x="95" y="1550" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Cross-image transformer models relationships</text>
+  <text x="95" y="1565" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">  across spatial regions (batch_first=False!)</text>
+  <text x="95" y="1585" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Critical: batch_first=False means transformer</text>
+  <text x="95" y="1597" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">encodes across BATCH dim, not sequence dim</text>
+
+  <rect x="500" y="1465" width="390" height="140" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="695" y="1485" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Text-Conditioned Enhancement</text>
+  <text x="515" y="1505" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• CLIP text encoder frozen (no grad)</text>
+  <text x="515" y="1520" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Token-level alignment with patch tokens</text>
+  <text x="515" y="1535" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Top-25% patches selected by text similarity</text>
+  <text x="515" y="1550" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Residual enhancement: x += α × (x ⊗ text)</text>
+  <text x="515" y="1565" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Dual loss: triplet + image-text contrastive</text>
+  <text x="515" y="1585" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Enables semantic guidance from scene descriptions</text>
+  <text x="515" y="1597" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">without backprop through CLIP backbone</text>
+
+  <rect x="920" y="1465" width="390" height="140" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1"/>
+  <text x="1115" y="1485" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Training &amp; Freezing Strategy</text>
+  <text x="935" y="1505" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• DINOv2 backbone: FROZEN (except Adapter)</text>
+  <text x="935" y="1520" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Adapter modules: trained (initialized near 0)</text>
+  <text x="935" y="1535" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• GeM params, transformer encoder: trained</text>
+  <text x="935" y="1550" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Text projection head: trained</text>
+  <text x="935" y="1565" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• torch.compile optional for speedup</text>
+  <text x="935" y="1585" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Two param groups: model_params + text_params</text>
+  <text x="935" y="1597" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">for potential differential LR (currently same)</text>
+
+  <rect x="80" y="1625" width="1230" height="125" rx="8" fill="#1a1a2e" stroke="#e94560" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="695" y="1645" text-anchor="middle" fill="#e94560" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="bold">Lightning Integration Details</text>
+  <text x="95" y="1665" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• save_hyperparameters(): all init args saved to checkpoint for reproducibility</text>
+  <text x="95" y="1682" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Metric tracking: MeanMetric for losses (running average), MaxMetric for best R@5</text>
+  <text x="95" y="1699" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• Feature accumulation: lists cleared on_epoch_start, concatenated on_epoch_end</text>
+  <text x="95" y="1716" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="10">• DataModule stage awareness: setup() called per process in DDP; no distributed sampling logic needed (Lightning handles it)</text>
+  <text x="95" y="1733" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="9">Hydra composition: model.yaml + data.yaml + trainer.yaml + experiment.yaml → single DictConfig → instantiate targets</text>
+
+  <!-- ==================== FOOTER ==================== -->
+  <rect x="50" y="1800" width="1300" height="80" rx="10" fill="#0f3460" stroke="#00d9ff" stroke-width="1"/>
+  <text x="700" y="1830" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="bold">EPRBench (SGVPR) — PyTorch Lightning Implementation</text>
+  <text x="700" y="1855" text-anchor="middle" fill="#cccccc" font-family="Segoe UI, Arial, sans-serif" font-size="11">DINOv2 backbone + Multi-scale GeM + Cross-image Transformer + CLIP Text Fusion</text>
+  <text x="700" y="1870" text-anchor="middle" fill="#aaaaaa" font-family="Segoe UI, Arial, sans-serif" font-size="10">Event-based Visual Place Recognition with Text-Guided Patch Enhancement</text>
+</svg>

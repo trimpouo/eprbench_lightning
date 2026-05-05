@@ -171,3 +171,5 @@ Thumbs.db
 *.swp
 *~
 *.bak
+
+/ai/

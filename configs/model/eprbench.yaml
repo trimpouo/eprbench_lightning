@@ -15,6 +15,14 @@ net:
     _target_: src.models.components.network.SGVPRNet
     pretrained_foundation: true
     foundation_model_path: ${paths.root_dir}/model/dinov2_vitb14_pretrain.pth
+    use_frequency_enhance: true
+    use_freq_topk: false
+    freq_score_weight: 0.10
+    freq_low_cut: 0.25
+    freq_mid_cut: 0.60
+    freq_highpass_cut: 0.25
+    freq_max_gain: 0.50
+    freq_gamma_init: 0.0
 
 # Loss parameters
 lambda_contrast: 0.1
@@ -38,6 +46,11 @@ pca_dim: null
 # Testing parameters
 efficient_ram_testing: false
 majority_weight: 0.01
+
+# Frequency contrastive loss parameters (optional)
+use_freq_contrastive_loss: false
+freq_loss_weight: 0.00
+freq_num_negatives: 2
 
 # Compile model for increased speed
 compile: false

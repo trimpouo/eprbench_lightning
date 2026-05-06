@@ -52,8 +52,10 @@ class CLIPTextEncoder(nn.Module):
         tokens = self._tokenize(texts).to(device)
 
         # CLIP sentence embedding
+        # Disable autocast to avoid dtype mismatch between attn_mask and query under AMP
         with torch.no_grad() if not any(p.requires_grad for p in self.model.parameters()) else torch.enable_grad():
-            clip_sent = self.model.encode_text(tokens)  # (B, clip_embed_dim)
+            with torch.autocast(device_type=str(device).split(":")[0], enabled=False):
+                clip_sent = self.model.encode_text(tokens)  # (B, clip_embed_dim)
 
         sent = self.text_proj(clip_sent)               # (B, output_dim)
         sent = F.normalize(sent, p=2, dim=1)
@@ -71,15 +73,17 @@ class CLIPTextEncoder(nn.Module):
         attention_mask = (tokens != 0).long()               # (B, L)
 
         # Get hidden states for each token
+        # Disable autocast to avoid dtype mismatch between attn_mask and query under AMP
         with torch.no_grad() if not any(p.requires_grad for p in self.model.parameters()) else torch.enable_grad():
-            x = self.model.token_embedding(tokens)          # (B, L, width)
-            x = x + self.model.positional_embedding.to(x.dtype)  # (L, width) -> broadcast to (B, L, width)
-            x = x.permute(1, 0, 2)                          # (L, B, width)
-            x = self.model.transformer(x)                   # (L, B, width)
-            x = x.permute(1, 0, 2)                          # (B, L, width)
-            x = self.model.ln_final(x)                      # (B, L, width)
+            with torch.autocast(device_type=str(device).split(":")[0], enabled=False):
+                x = self.model.token_embedding(tokens)          # (B, L, width)
+                x = x + self.model.positional_embedding.to(x.dtype)  # (L, width) -> broadcast to (B, L, width)
+                x = x.permute(1, 0, 2)                          # (L, B, width)
+                x = self.model.transformer(x)                   # (L, B, width)
+                x = x.permute(1, 0, 2)                          # (B, L, width)
+                x = self.model.ln_final(x)                      # (B, L, width)
 
-            x = x @ self.model.text_projection              # (B, L, clip_embed_dim)
+                x = x @ self.model.text_projection              # (B, L, clip_embed_dim)
 
         token_embeddings = self.text_proj(x)                # (B, L, output_dim)
         token_embeddings = F.normalize(token_embeddings, p=2, dim=-1)

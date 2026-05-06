@@ -8,6 +8,7 @@ from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 
 from src.models.components.backbone.text_encoder_clip import CLIPTextEncoder
+from src.models.components.frequency_enhancement import FrequencyContrastiveLoss
 from src.models.components.loss import loss_function
 from src.models.components.network import SGVPRNet
 
@@ -36,6 +37,9 @@ class EPRBenchLitModule(LightningModule):
         efficient_ram_testing: bool = False,
         majority_weight: float = 0.01,
         compile: bool = False,
+        use_freq_contrastive_loss: bool = False,
+        freq_loss_weight: float = 0.0,
+        freq_num_negatives: int = 2,
     ) -> None:
         """Initialize the EPRBenchLitModule.
 
@@ -89,14 +93,25 @@ class EPRBenchLitModule(LightningModule):
         # loss function is imported from components.loss
         self.criterion = loss_function
 
+        # Frequency contrastive loss (optional)
+        self.use_freq_contrastive_loss = use_freq_contrastive_loss
+        self.freq_loss_weight = freq_loss_weight
+        if self.use_freq_contrastive_loss:
+            self.freq_contrastive_loss = FrequencyContrastiveLoss(
+                num_negatives=freq_num_negatives
+            )
+        else:
+            self.freq_contrastive_loss = None
+
         # metric objects for calculating and averaging losses across batches
         self.train_loss_total = MeanMetric()
         self.train_loss_tri = MeanMetric()
         self.train_loss_i2t = MeanMetric()
         self.train_loss_t2i = MeanMetric()
+        self.train_loss_freq = MeanMetric()
 
-        # for tracking best so far validation R@5
-        self.val_r5_best = MaxMetric()
+        # for tracking best so far validation R@1
+        self.val_r1_best = MaxMetric()
 
         # validation/test feature storage
         self._val_features: List[torch.Tensor] = []
@@ -133,7 +148,7 @@ class EPRBenchLitModule(LightningModule):
         """Lightning hook that is called when training begins."""
         # by default lightning executes validation step sanity checks before training starts,
         # so it's worth to make sure validation metrics don't store results from these checks
-        self.val_r5_best.reset()
+        self.val_r1_best.reset()
 
     def training_step(
         self, batch: Tuple[torch.Tensor, ...], batch_idx: int
@@ -159,7 +174,7 @@ class EPRBenchLitModule(LightningModule):
             # Token embeddings and mask
             text_tokens, attn_mask = self.text_encoder.encode_batch_tokens(text)
             # Forward pass with text conditioning
-            descriptors, image_global_raw = self.forward(
+            descriptors, aux = self.forward(
                 images,
                 text=text_vec,
                 text_tokens=text_tokens,
@@ -167,12 +182,13 @@ class EPRBenchLitModule(LightningModule):
                 return_aux=True,
             )
             # Aggregate per-place features for contrastive loss
-            image_global_raw_place = image_global_raw.view(BS, N, -1).mean(dim=1)
+            image_global_raw_place = aux["image_global_raw"].view(BS, N, -1).mean(dim=1)
             text_vec_place = text_vec.view(BS, N, -1).mean(dim=1)
         else:
             descriptors = self.forward(images)
             image_global_raw_place = None
             text_vec_place = None
+            aux = {}
 
         # Compute combined loss
         loss, tri_loss, loss_i2t, loss_t2i = self.criterion(
@@ -183,6 +199,35 @@ class EPRBenchLitModule(LightningModule):
             lambda_contrast=self.hparams.lambda_contrast,
             temperature=self.hparams.temperature,
         )
+
+        # Optional frequency contrastive loss
+        freq_loss = None
+        patch_map_for_loss = (
+            aux.get("patch_map", None) if isinstance(aux, dict) else None
+        )
+        if self.freq_contrastive_loss is not None and patch_map_for_loss is not None:
+            freq_loss = self.freq_contrastive_loss(patch_map_for_loss, labels)
+            loss = loss + self.freq_loss_weight * freq_loss
+            self.train_loss_freq(freq_loss)
+            self.log(
+                "train/freq_loss",
+                self.train_loss_freq,
+                on_step=False,
+                on_epoch=True,
+                prog_bar=False,
+            )
+
+        # Log frequency gamma if available
+        freq_info = aux.get("freq_info", {}) if isinstance(aux, dict) else {}
+        freq_gamma = freq_info.get("freq_gamma", None)
+        if freq_gamma is not None:
+            self.log(
+                "train/freq_gamma",
+                freq_gamma.float(),
+                on_step=False,
+                on_epoch=True,
+                prog_bar=False,
+            )
 
         # update and log metrics
         self.train_loss_total(loss)
@@ -301,12 +346,12 @@ class EPRBenchLitModule(LightningModule):
 
         # Log recalls
         for val, rec in zip(self.hparams.recall_values, recalls):
-            self.log(f"val/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 5))
+            self.log(f"val/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
 
-        r5 = float(recalls[1]) if len(recalls) > 1 else 0.0
-        self.val_r5_best(r5)
+        r1 = float(recalls[0]) if len(recalls) > 0 else 0.0
+        self.val_r1_best(r1)
         self.log(
-            "val/R@5_best", self.val_r5_best.compute(), on_epoch=True, prog_bar=True
+            "val/R@1_best", self.val_r1_best.compute(), on_epoch=True, prog_bar=True
         )
 
     def on_test_epoch_start(self) -> None:
@@ -385,7 +430,7 @@ class EPRBenchLitModule(LightningModule):
 
         # Log recalls
         for val, rec in zip(self.hparams.recall_values, recalls):
-            self.log(f"test/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 5))
+            self.log(f"test/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
 
         recalls_str = ", ".join(
             [

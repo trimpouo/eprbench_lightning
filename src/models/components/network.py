@@ -1,4 +1,5 @@
 import math
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -10,6 +11,12 @@ from src.models.components.backbone.vision_transformer import (
     vit_giant2,
     vit_large,
     vit_small,
+)
+from src.models.components.frequency_enhancement import (
+    EventFrequencyEnhancer,
+    FrequencyContrastiveLoss,
+    map_to_tokens,
+    tokens_to_map,
 )
 
 
@@ -80,6 +87,14 @@ class SGVPRNet(nn.Module):
         clip_model_name: str = "ViT-B-16",
         clip_pretrained: str = "laion2b_s34b_b79k",
         clip_freeze: bool = True,
+        use_frequency_enhance: bool = True,
+        use_freq_topk: bool = True,
+        freq_score_weight: float = 0.10,
+        freq_low_cut: float = 0.25,
+        freq_mid_cut: float = 0.60,
+        freq_highpass_cut: float = 0.25,
+        freq_max_gain: float = 0.50,
+        freq_gamma_init: float = 0.0,
     ):
         super().__init__()
         self.backbone = get_backbone(pretrained_foundation, foundation_model_path)
@@ -116,6 +131,23 @@ class SGVPRNet(nn.Module):
         else:
             self.text_encoder_clip = None
 
+        self.use_frequency_enhance = use_frequency_enhance
+        self.use_freq_topk = use_freq_topk
+        self.freq_score_weight = freq_score_weight
+        self.embed_dim = 768
+
+        if self.use_frequency_enhance:
+            self.freq_enhancer = EventFrequencyEnhancer(
+                dim=self.embed_dim,
+                low_cut=freq_low_cut,
+                mid_cut=freq_mid_cut,
+                highpass_cut=freq_highpass_cut,
+                max_gain=freq_max_gain,
+                gamma_init=freq_gamma_init,
+            )
+        else:
+            self.freq_enhancer = None
+
     def forward(
         self,
         x,
@@ -133,6 +165,14 @@ class SGVPRNet(nn.Module):
         x_patch = x["x_prenorm"][:, 1:, :]  # 提取 patch tokens (B, N, D)
 
         image_global_raw = x0
+
+        # Frequency enhancement on patch map
+        freq_info: Dict[str, torch.Tensor] = {}
+        patch_map = None
+        if self.freq_enhancer is not None:
+            patch_map, hp, wp = tokens_to_map(x_patch)
+            patch_map, freq_info = self.freq_enhancer(patch_map)
+            x_patch = map_to_tokens(patch_map)
 
         if self.text_encoder_clip is not None and raw_texts is not None:
             text = self.text_encoder_clip(raw_texts)  # (B, 768)
@@ -156,9 +196,15 @@ class SGVPRNet(nn.Module):
 
             max_sim, max_token_idx = sim_matrix.max(dim=-1)
 
+            score = max_sim
+            if self.use_freq_topk and "freq_energy" in freq_info:
+                freq_energy = freq_info["freq_energy"].to(max_sim.dtype)
+                if freq_energy.shape == max_sim.shape:
+                    score = score + self.freq_score_weight * freq_energy
+
             k = max(int(self.mask_keep_ratio * N), 1)
 
-            _, topk_idx = torch.topk(max_sim, k=k, dim=1, largest=True, sorted=False)
+            _, topk_idx = torch.topk(score, k=k, dim=1, largest=True, sorted=False)
 
             selected_x = torch.gather(
                 x_patch, 1, topk_idx.unsqueeze(-1).expand(-1, -1, D)
@@ -177,7 +223,11 @@ class SGVPRNet(nn.Module):
 
             x_patch = x_out
 
-        x_p = x_patch.view(B, W, H, D).permute(0, 3, 1, 2)
+        # Use enhanced patch_map if available, otherwise reshape original x_patch
+        if patch_map is not None:
+            x_p = patch_map
+        else:
+            x_p = x_patch.view(B, W, H, D).permute(0, 3, 1, 2)
 
         x10, x11, x12, x13 = (
             self.aggregation(x_p[:, :, 0:8, 0:8]),
@@ -220,7 +270,12 @@ class SGVPRNet(nn.Module):
         x = self.encoder(x).view(B, 14 * D)
         x = torch.nn.functional.normalize(x, p=2, dim=-1)
         if return_aux:
-            return x, image_global_raw
+            aux = {
+                "image_global_raw": image_global_raw,
+                "patch_map": patch_map,
+                "freq_info": freq_info,
+            }
+            return x, aux
         return x
 
 

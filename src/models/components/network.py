@@ -21,6 +21,7 @@ from src.models.components.frequency_enhancement import (
 from src.models.components.mods.cross_spectral_refinement import (
     CrossSpectralAttentionFeatureRefinement,
 )
+from src.models.components.mods.scfm import SpatialChannelFeatureModulator
 
 
 class GeM(nn.Module):
@@ -149,6 +150,11 @@ class SGVPRNet(nn.Module):
                 self.embed_dim
             )
 
+        scfm_cfg = self.mods.get("scfm", {})
+        self.use_scfm = scfm_cfg.get("enabled", False)
+        if self.use_scfm:
+            self.scfm = SpatialChannelFeatureModulator(channels=self.embed_dim)
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -261,6 +267,9 @@ class SGVPRNet(nn.Module):
             x_p = patch_map
         else:
             x_p = x_patch.view(B, W, H, D).permute(0, 3, 1, 2)
+
+        if self.use_scfm:
+            x_p = self.scfm(x_p)
 
         x10, x11, x12, x13 = (
             self.aggregation(x_p[:, :, 0:8, 0:8]),

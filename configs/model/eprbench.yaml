@@ -27,6 +27,8 @@ net:
         cross_spectral:
             enabled: false
             layer_idx: 6
+        scfm:
+            enabled: true
 
 # Loss parameters
 lambda_contrast: 0.1

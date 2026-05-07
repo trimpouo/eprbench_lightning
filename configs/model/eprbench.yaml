@@ -15,7 +15,7 @@ net:
     _target_: src.models.components.network.SGVPRNet
     pretrained_foundation: true
     foundation_model_path: ${paths.root_dir}/model/dinov2_vitb14_pretrain.pth
-    use_frequency_enhance: true
+    use_frequency_enhance: false
     use_freq_topk: false
     freq_score_weight: 0.10
     freq_low_cut: 0.25
@@ -23,6 +23,10 @@ net:
     freq_highpass_cut: 0.25
     freq_max_gain: 0.50
     freq_gamma_init: 0.0
+    mods:
+        cross_spectral:
+            enabled: false
+            layer_idx: 6
 
 # Loss parameters
 lambda_contrast: 0.1

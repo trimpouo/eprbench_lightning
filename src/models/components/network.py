@@ -1,5 +1,5 @@
 import math
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -17,6 +17,9 @@ from src.models.components.frequency_enhancement import (
     FrequencyContrastiveLoss,
     map_to_tokens,
     tokens_to_map,
+)
+from src.models.components.mods.cross_spectral_refinement import (
+    CrossSpectralAttentionFeatureRefinement,
 )
 
 
@@ -95,6 +98,7 @@ class SGVPRNet(nn.Module):
         freq_highpass_cut: float = 0.25,
         freq_max_gain: float = 0.50,
         freq_gamma_init: float = 0.0,
+        mods: Optional[Dict[str, Any]] = None,
     ):
         super().__init__()
         self.backbone = get_backbone(pretrained_foundation, foundation_model_path)
@@ -136,6 +140,15 @@ class SGVPRNet(nn.Module):
         self.freq_score_weight = freq_score_weight
         self.embed_dim = 768
 
+        self.mods = mods if mods is not None else {}
+        cs_cfg = self.mods.get("cross_spectral", {})
+        self.use_cross_spectral = cs_cfg.get("enabled", False)
+        self.cross_spectral_layer_idx = cs_cfg.get("layer_idx", 6)
+        if self.use_cross_spectral:
+            self.cross_spectral_refiner = CrossSpectralAttentionFeatureRefinement(
+                self.embed_dim
+            )
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -157,12 +170,32 @@ class SGVPRNet(nn.Module):
         raw_texts: list = None,
         return_aux: bool = False,
     ):
-        x = self.backbone(x)
+        if self.use_cross_spectral:
+            low_level_tokens = None
+
+            def _hook(module, input, output):
+                nonlocal low_level_tokens
+                low_level_tokens = output
+
+            handle = self.backbone.blocks[
+                self.cross_spectral_layer_idx
+            ].register_forward_hook(_hook)
+            x = self.backbone(x)
+            handle.remove()
+        else:
+            x = self.backbone(x)
 
         B, P, D = x["x_prenorm"].shape
         W = H = int(math.sqrt(P - 1))
         x0 = x["x_norm_clstoken"]
         x_patch = x["x_prenorm"][:, 1:, :]  # 提取 patch tokens (B, N, D)
+
+        if self.use_cross_spectral and low_level_tokens is not None:
+            low_patch = low_level_tokens[:, 1:, :]
+            high_map = x_patch.view(B, W, H, D).permute(0, 3, 1, 2).contiguous()
+            low_map = low_patch.view(B, W, H, D).permute(0, 3, 1, 2).contiguous()
+            refined_map = self.cross_spectral_refiner(high_map, low_map)
+            x_patch = refined_map.permute(0, 2, 3, 1).reshape(B, W * H, D)
 
         image_global_raw = x0
 

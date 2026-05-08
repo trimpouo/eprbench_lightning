@@ -21,6 +21,7 @@ from src.models.components.frequency_enhancement import (
 from src.models.components.mods.cross_spectral_refinement import (
     CrossSpectralAttentionFeatureRefinement,
 )
+from src.models.components.mods.sacf import SpectralSpatialAdaptiveFusion
 from src.models.components.mods.scfm import SpatialChannelFeatureModulator
 
 
@@ -155,6 +156,12 @@ class SGVPRNet(nn.Module):
         if self.use_scfm:
             self.scfm = SpatialChannelFeatureModulator(channels=self.embed_dim)
 
+        sacf_cfg = self.mods.get("sacf", {})
+        self.use_sacf = sacf_cfg.get("enabled", False)
+        self.sacf_layer_idx = sacf_cfg.get("layer_idx", 6)
+        if self.use_sacf:
+            self.sacf = SpectralSpatialAdaptiveFusion(in_channels=self.embed_dim)
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -176,16 +183,23 @@ class SGVPRNet(nn.Module):
         raw_texts: list = None,
         return_aux: bool = False,
     ):
+        low_level_tokens = None
+        needs_low_level = self.use_cross_spectral or self.use_sacf
+        active_layer_idx = None
         if self.use_cross_spectral:
-            low_level_tokens = None
+            active_layer_idx = self.cross_spectral_layer_idx
+        elif self.use_sacf:
+            active_layer_idx = self.sacf_layer_idx
+
+        if needs_low_level:
 
             def _hook(module, input, output):
                 nonlocal low_level_tokens
                 low_level_tokens = output
 
-            handle = self.backbone.blocks[
-                self.cross_spectral_layer_idx
-            ].register_forward_hook(_hook)
+            handle = self.backbone.blocks[active_layer_idx].register_forward_hook(
+                _hook
+            )
             x = self.backbone(x)
             handle.remove()
         else:
@@ -196,12 +210,21 @@ class SGVPRNet(nn.Module):
         x0 = x["x_norm_clstoken"]
         x_patch = x["x_prenorm"][:, 1:, :]  # 提取 patch tokens (B, N, D)
 
-        if self.use_cross_spectral and low_level_tokens is not None:
+        if needs_low_level and low_level_tokens is not None:
             low_patch = low_level_tokens[:, 1:, :]
+            orig_dtype = x_patch.dtype
             high_map = x_patch.view(B, W, H, D).permute(0, 3, 1, 2).contiguous()
             low_map = low_patch.view(B, W, H, D).permute(0, 3, 1, 2).contiguous()
-            refined_map = self.cross_spectral_refiner(high_map, low_map)
-            x_patch = refined_map.permute(0, 2, 3, 1).reshape(B, W * H, D)
+
+            if self.use_cross_spectral:
+                high_map = self.cross_spectral_refiner(high_map, low_map)
+
+            if self.use_sacf:
+                high_map = self.sacf(high_map, low_map)
+
+            # Preserve original dtype to avoid AMP dtype mismatches downstream
+            high_map = high_map.to(orig_dtype)
+            x_patch = high_map.permute(0, 2, 3, 1).reshape(B, W * H, D)
 
         image_global_raw = x0
 

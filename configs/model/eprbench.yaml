@@ -28,7 +28,10 @@ net:
             enabled: false
             layer_idx: 6
         scfm:
+            enabled: false
+        sacf:
             enabled: true
+            layer_idx: 6
 
 # Loss parameters
 lambda_contrast: 0.1

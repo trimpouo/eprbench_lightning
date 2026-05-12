@@ -21,6 +21,9 @@ from src.models.components.frequency_enhancement import (
 from src.models.components.mods.cross_spectral_refinement import (
     CrossSpectralAttentionFeatureRefinement,
 )
+from src.models.components.mods.fbgw import FrequencyBandGuidedUnit
+from src.models.components.mods.igr import InfoGatedReconstructUnit
+from src.models.components.mods.lgfp import LowFrequencyGuidedFeaturePurification
 from src.models.components.mods.sacf import SpectralSpatialAdaptiveFusion
 from src.models.components.mods.scfm import SpatialChannelFeatureModulator
 
@@ -162,6 +165,41 @@ class SGVPRNet(nn.Module):
         if self.use_sacf:
             self.sacf = SpectralSpatialAdaptiveFusion(in_channels=self.embed_dim)
 
+        igr_cfg = self.mods.get("igr", {})
+        self.use_igr = igr_cfg.get("enabled", False)
+        igr_gate_threshold = igr_cfg.get("gate_threshold", 0.5)
+        igr_num_groups = igr_cfg.get("num_groups", 16)
+        if self.use_igr:
+            self.igr = InfoGatedReconstructUnit(
+                in_channels=self.embed_dim,
+                gate_threshold=igr_gate_threshold,
+                num_groups=igr_num_groups,
+            )
+
+        lgfp_cfg = self.mods.get("lgfp", {})
+        self.use_lgfp = lgfp_cfg.get("enabled", False)
+        if self.use_lgfp:
+            self.lgfp = LowFrequencyGuidedFeaturePurification(
+                in_channels=self.embed_dim,
+                wavelet_type=lgfp_cfg.get("wavelet_type", "haar"),
+                padding_mode=lgfp_cfg.get("padding_mode", "symmetric"),
+                enable_gaussian_smoothing=lgfp_cfg.get(
+                    "enable_gaussian_smoothing", True
+                ),
+                high_frequency_threshold=lgfp_cfg.get(
+                    "high_frequency_threshold", 0.5
+                ),
+            )
+
+        fbgw_cfg = self.mods.get("fbgw", {})
+        self.use_fbgw = fbgw_cfg.get("enabled", False)
+        if self.use_fbgw:
+            self.fbgw = FrequencyBandGuidedUnit(
+                in_channels=self.embed_dim,
+                out_channels=self.embed_dim,
+                reduction_ratio=fbgw_cfg.get("reduction_ratio", 16),
+            )
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -293,6 +331,15 @@ class SGVPRNet(nn.Module):
 
         if self.use_scfm:
             x_p = self.scfm(x_p)
+
+        if self.use_igr:
+            x_p = self.igr(x_p)
+
+        if self.use_lgfp:
+            x_p = self.lgfp(x_p)
+
+        if self.use_fbgw:
+            x_p = self.fbgw(x_p)
 
         x10, x11, x12, x13 = (
             self.aggregation(x_p[:, :, 0:8, 0:8]),

@@ -28,10 +28,23 @@ net:
             enabled: false
             layer_idx: 6
         scfm:
-            enabled: false
+            enabled: true
         sacf:
             enabled: true
             layer_idx: 6
+        igr:
+            enabled: false
+            gate_threshold: 0.5
+            num_groups: 16
+        lgfp:
+            enabled: false
+            wavelet_type: haar
+            padding_mode: symmetric
+            enable_gaussian_smoothing: true
+            high_frequency_threshold: 0.5
+        fbgw:
+            enabled: false
+            reduction_ratio: 16
 
 # Loss parameters
 lambda_contrast: 0.1

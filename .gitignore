@@ -173,3 +173,5 @@ Thumbs.db
 *.bak
 
 /ai/
+/node_modules/
+*package*.json

@@ -1,0 +1,562 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 3400" font-family="'Inter','Segoe UI','Microsoft YaHei',Arial,sans-serif">
+  <defs>
+    <linearGradient id="hdr" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0f172a"/><stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="scfmG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb"/><stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="sacfG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669"/><stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+    <linearGradient id="decG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d97706"/><stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="prcG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#334155"/><stop offset="100%" style="stop-color:#475569"/>
+    </linearGradient>
+    <linearGradient id="scfmDG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d4ed8"/><stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="sacfDG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#047857"/><stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/><stop offset="100%" style="stop-color:#f1f5f9"/>
+    </linearGradient>
+    <filter id="sh" x="-6%" y="-6%" width="112%" height="116%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#00000015"/>
+    </filter>
+    <filter id="ss" x="-3%" y="-3%" width="106%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000010"/>
+    </filter>
+    <marker id="aG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#64748b"/></marker>
+    <marker id="aB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#2563eb"/></marker>
+    <marker id="aGr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#059669"/></marker>
+    <marker id="aO" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#d97706"/></marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1500" height="3400" fill="url(#bgG)"/>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1: Configuration & Initialization                    -->
+  <!-- Box: y=30, h=340, content y=90..340                          -->
+  <!-- ============================================================ -->
+  <rect x="40" y="30" width="1420" height="340" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="2" filter="url(#sh)"/>
+  <rect x="40" y="30" width="1420" height="50" rx="16" fill="url(#hdr)"/>
+  <rect x="40" y="64" width="1420" height="16" fill="url(#hdr)"/>
+  <text x="750" y="62" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">1. 配置与初始化 (Configuration &amp; Initialization)</text>
+
+  <!-- YAML Config -->
+  <rect x="80" y="100" width="260" height="65" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="2" filter="url(#ss)"/>
+  <text x="210" y="126" text-anchor="middle" fill="#b45309" font-size="14" font-weight="700">YAML 配置文件</text>
+  <text x="210" y="148" text-anchor="middle" fill="#78350f" font-size="11">eprbench.yaml → mods.scfm / mods.sacf</text>
+
+  <line x1="340" y1="132" x2="400" y2="132" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- SGVPRNet init -->
+  <rect x="410" y="100" width="240" height="65" rx="10" fill="url(#prcG)" filter="url(#ss)"/>
+  <text x="530" y="126" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">SGVPRNet.__init__()</text>
+  <text x="530" y="148" text-anchor="middle" fill="#cbd5e1" font-size="11">解析 mods 配置字典</text>
+
+  <line x1="650" y1="132" x2="700" y2="132" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Decision: scfm enabled? -->
+  <polygon points="790,97 870,132 790,167 710,132" fill="url(#decG)" filter="url(#ss)"/>
+  <text x="790" y="129" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">scfm</text>
+  <text x="790" y="144" text-anchor="middle" fill="#fff" font-size="10">enabled?</text>
+
+  <!-- Yes -->
+  <line x1="870" y1="132" x2="920" y2="132" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+  <text x="895" y="125" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="700">是</text>
+  <rect x="930" y="97" width="230" height="65" rx="10" fill="url(#scfmG)" filter="url(#ss)"/>
+  <text x="1045" y="120" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">✓ 创建 SCFM 模块</text>
+  <text x="1045" y="140" text-anchor="middle" fill="#dbeafe" font-size="11">SpatialChannelFeatureModulator</text>
+  <text x="1045" y="155" text-anchor="middle" fill="#dbeafe" font-size="10">channels=768</text>
+
+  <!-- No -->
+  <line x1="790" y1="167" x2="790" y2="190" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="790" y1="190" x2="930" y2="190" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#aG)"/>
+  <text x="805" y="183" fill="#64748b" font-size="11">否</text>
+  <rect x="930" y="175" width="230" height="35" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="1045" y="198" text-anchor="middle" fill="#64748b" font-size="12">self.use_scfm = False</text>
+
+  <!-- Decision: sacf enabled? -->
+  <polygon points="790,230 870,265 790,300 710,265" fill="url(#decG)" filter="url(#ss)"/>
+  <text x="790" y="262" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">sacf</text>
+  <text x="790" y="277" text-anchor="middle" fill="#fff" font-size="10">enabled?</text>
+
+  <line x1="530" y1="165" x2="530" y2="265" stroke="#059669" stroke-width="2"/>
+  <line x1="530" y1="265" x2="710" y2="265" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- Yes -->
+  <line x1="870" y1="265" x2="920" y2="265" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+  <text x="895" y="258" text-anchor="middle" fill="#059669" font-size="11" font-weight="700">是</text>
+  <rect x="930" y="230" width="270" height="65" rx="10" fill="url(#sacfG)" filter="url(#ss)"/>
+  <text x="1065" y="253" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">✓ 创建 SACF 模块</text>
+  <text x="1065" y="273" text-anchor="middle" fill="#d1fae5" font-size="11">SpectralSpatialAdaptiveFusion</text>
+  <text x="1065" y="288" text-anchor="middle" fill="#d1fae5" font-size="10">in_channels=768, layer_idx=6</text>
+
+  <!-- No -->
+  <line x1="790" y1="300" x2="790" y2="320" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="790" y1="320" x2="930" y2="320" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#aG)"/>
+  <text x="805" y="313" fill="#64748b" font-size="11">否</text>
+  <rect x="930" y="305" width="270" height="35" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="1065" y="328" text-anchor="middle" fill="#64748b" font-size="12">self.use_sacf = False</text>
+
+  <!-- Hook note -->
+  <rect x="80" y="240" width="300" height="50" rx="8" fill="#ecfdf5" stroke="#34d399" stroke-width="1.5"/>
+  <text x="230" y="262" text-anchor="middle" fill="#059669" font-size="11" font-weight="700">SACF 需要低层特征</text>
+  <text x="230" y="280" text-anchor="middle" fill="#10b981" font-size="10">注册 Hook 于 backbone.blocks[layer_idx]</text>
+  <line x1="380" y1="265" x2="710" y2="265" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#aGr)"/>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2: Forward Pass Main Flow                             -->
+  <!-- Box: y=400, h=1160, content y=460..1530                      -->
+  <!-- ============================================================ -->
+  <rect x="40" y="400" width="1420" height="1160" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="2" filter="url(#sh)"/>
+  <rect x="40" y="400" width="1420" height="50" rx="16" fill="url(#hdr)"/>
+  <rect x="40" y="434" width="1420" height="16" fill="url(#hdr)"/>
+  <text x="750" y="432" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">2. 前向传播主流程 (Forward Pass)</text>
+
+  <!-- Input -->
+  <rect x="620" y="470" width="260" height="55" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" filter="url(#ss)"/>
+  <text x="750" y="495" text-anchor="middle" fill="#1e40af" font-size="14" font-weight="700">输入图像 x</text>
+  <text x="750" y="513" text-anchor="middle" fill="#3b82f6" font-size="11">[B, 3, 518, 518]</text>
+
+  <line x1="750" y1="525" x2="750" y2="555" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Decision: needs_low_level? -->
+  <polygon points="750,555 840,590 750,625 660,590" fill="url(#decG)" filter="url(#ss)"/>
+  <text x="750" y="587" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">需要低层</text>
+  <text x="750" y="602" text-anchor="middle" fill="#fff" font-size="10">特征?</text>
+
+  <!-- Yes: left -->
+  <line x1="660" y1="590" x2="580" y2="590" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+  <text x="620" y="583" text-anchor="middle" fill="#059669" font-size="11" font-weight="700">是</text>
+  <rect x="340" y="565" width="240" height="55" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#ss)"/>
+  <text x="460" y="587" text-anchor="middle" fill="#047857" font-size="12" font-weight="700">注册 Hook + 前向传播</text>
+  <text x="460" y="605" text-anchor="middle" fill="#059669" font-size="10">捕获 backbone.blocks[6] 输出</text>
+
+  <!-- No: right -->
+  <line x1="840" y1="590" x2="920" y2="590" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#aG)"/>
+  <text x="880" y="583" text-anchor="middle" fill="#64748b" font-size="11">否</text>
+  <rect x="930" y="572" width="240" height="38" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="1050" y="596" text-anchor="middle" fill="#64748b" font-size="12">直接前向传播 (无 Hook)</text>
+
+  <!-- Merge -->
+  <line x1="460" y1="620" x2="460" y2="650" stroke="#64748b" stroke-width="2"/>
+  <line x1="1050" y1="610" x2="1050" y2="650" stroke="#64748b" stroke-width="2"/>
+  <line x1="460" y1="650" x2="1050" y2="650" stroke="#64748b" stroke-width="2"/>
+  <line x1="750" y1="650" x2="750" y2="670" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Extract tokens -->
+  <rect x="620" y="675" width="260" height="55" rx="10" fill="url(#prcG)" filter="url(#ss)"/>
+  <text x="750" y="698" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">提取 Token</text>
+  <text x="750" y="716" text-anchor="middle" fill="#cbd5e1" font-size="10">x_prenorm, x_norm_clstoken</text>
+
+  <line x1="750" y1="730" x2="750" y2="760" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Decision: has low_level tokens? -->
+  <polygon points="750,760 840,795 750,830 660,795" fill="url(#decG)" filter="url(#ss)"/>
+  <text x="750" y="792" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">有低层</text>
+  <text x="750" y="807" text-anchor="middle" fill="#fff" font-size="10">Token?</text>
+
+  <!-- Yes: right to form maps + SACF -->
+  <line x1="840" y1="795" x2="920" y2="795" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+  <text x="880" y="788" text-anchor="middle" fill="#059669" font-size="11" font-weight="700">是</text>
+
+  <rect x="930" y="770" width="200" height="50" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#ss)"/>
+  <text x="1030" y="792" text-anchor="middle" fill="#047857" font-size="12" font-weight="700">构建特征图</text>
+  <text x="1030" y="808" text-anchor="middle" fill="#059669" font-size="10">high_map, low_map</text>
+
+  <line x1="1030" y1="820" x2="1030" y2="845" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- SACF module -->
+  <rect x="930" y="850" width="200" height="50" rx="10" fill="url(#sacfG)" filter="url(#ss)"/>
+  <text x="1030" y="872" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">SACF 模块</text>
+  <text x="1030" y="890" text-anchor="middle" fill="#d1fae5" font-size="10">high_map, low_map</text>
+
+  <!-- SACF ref -->
+  <rect x="960" y="910" width="140" height="28" rx="6" fill="#d1fae5" stroke="#34d399" stroke-width="1.5"/>
+  <text x="1030" y="929" text-anchor="middle" fill="#047857" font-size="10" font-weight="700">→ 详见第4节</text>
+
+  <!-- No path -->
+  <line x1="750" y1="830" x2="750" y2="860" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="765" y="850" fill="#64748b" font-size="11">否</text>
+
+  <!-- Merge after SACF -->
+  <line x1="750" y1="860" x2="750" y2="950" stroke="#64748b" stroke-width="2"/>
+  <line x1="1030" y1="938" x2="1030" y2="950" stroke="#64748b" stroke-width="2"/>
+  <line x1="750" y1="950" x2="1030" y2="950" stroke="#64748b" stroke-width="2"/>
+
+  <line x1="890" y1="950" x2="890" y2="970" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+  <line x1="890" y1="970" x2="750" y2="970" stroke="#64748b" stroke-width="2"/>
+  <line x1="750" y1="970" x2="750" y2="990" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Text-guided patch fusion -->
+  <rect x="620" y="995" width="260" height="55" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="2" filter="url(#ss)"/>
+  <text x="750" y="1018" text-anchor="middle" fill="#be123c" font-size="13" font-weight="700">文本引导 Patch 融合</text>
+  <text x="750" y="1036" text-anchor="middle" fill="#f43f5e" font-size="10">相似度 → Top-K 选择 → 增强</text>
+
+  <line x1="750" y1="1050" x2="750" y2="1075" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Form x_p -->
+  <rect x="620" y="1080" width="260" height="45" rx="10" fill="url(#prcG)" filter="url(#ss)"/>
+  <text x="750" y="1100" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">构建 Patch 特征图 x_p</text>
+  <text x="750" y="1115" text-anchor="middle" fill="#cbd5e1" font-size="10">[B, 768, 16, 16]</text>
+
+  <line x1="750" y1="1125" x2="750" y2="1155" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <!-- Decision: use_scfm? -->
+  <polygon points="750,1155 840,1190 750,1225 660,1190" fill="url(#decG)" filter="url(#ss)"/>
+  <text x="750" y="1194" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">use_scfm?</text>
+
+  <!-- Yes: left to SCFM -->
+  <line x1="660" y1="1190" x2="580" y2="1190" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+  <text x="620" y="1183" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="700">是</text>
+
+  <rect x="380" y="1165" width="200" height="50" rx="10" fill="url(#scfmG)" filter="url(#ss)"/>
+  <text x="480" y="1187" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">SCFM 模块</text>
+  <text x="480" y="1205" text-anchor="middle" fill="#dbeafe" font-size="10">x_p = scfm(x_p)</text>
+
+  <!-- SCFM ref -->
+  <rect x="410" y="1225" width="140" height="28" rx="6" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="480" y="1244" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="700">→ 详见第3节</text>
+
+  <!-- No path -->
+  <line x1="750" y1="1225" x2="750" y2="1255" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="765" y="1245" fill="#64748b" font-size="11">否</text>
+
+  <!-- Merge after SCFM -->
+  <line x1="480" y1="1253" x2="480" y2="1275" stroke="#64748b" stroke-width="2"/>
+  <line x1="750" y1="1255" x2="750" y2="1275" stroke="#64748b" stroke-width="2"/>
+  <line x1="480" y1="1275" x2="750" y2="1275" stroke="#64748b" stroke-width="2"/>
+  <line x1="615" y1="1275" x2="615" y2="1295" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+  <line x1="615" y1="1295" x2="750" y2="1295" stroke="#64748b" stroke-width="2"/>
+  <line x1="750" y1="1295" x2="750" y2="1315" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Other mods -->
+  <rect x="620" y="1320" width="260" height="45" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="750" y="1340" text-anchor="middle" fill="#475569" font-size="12" font-weight="600">其他 Mod 模块</text>
+  <text x="750" y="1355" text-anchor="middle" fill="#64748b" font-size="10">IGR / LGFP / FBGW (按配置)</text>
+
+  <line x1="750" y1="1365" x2="750" y2="1390" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Multi-scale aggregation -->
+  <rect x="600" y="1395" width="300" height="55" rx="10" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2" filter="url(#ss)"/>
+  <text x="750" y="1418" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="700">多尺度聚合 + Transformer</text>
+  <text x="750" y="1436" text-anchor="middle" fill="#7c3aed" font-size="10">GeM → 4+9 子区域 → Encoder</text>
+
+  <line x1="750" y1="1450" x2="750" y2="1475" stroke="#64748b" stroke-width="2" marker-end="url(#aG)"/>
+
+  <!-- Output -->
+  <rect x="620" y="1480" width="260" height="50" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#ss)"/>
+  <text x="750" y="1505" text-anchor="middle" fill="#047857" font-size="14" font-weight="700">输出描述符 [B, 10752]</text>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3: SCFM Internal Flow                                -->
+  <!-- Box: y=1590, h=830                                          -->
+  <!-- ============================================================ -->
+  <rect x="40" y="1590" width="700" height="830" rx="16" fill="#fff" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <rect x="40" y="1590" width="700" height="50" rx="16" fill="url(#scfmDG)"/>
+  <rect x="40" y="1624" width="700" height="16" fill="url(#scfmDG)"/>
+  <text x="390" y="1622" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">3. SCFM 内部流程 (Spatial-Channel Feature Modulator)</text>
+
+  <!-- Input -->
+  <rect x="250" y="1660" width="280" height="45" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" filter="url(#ss)"/>
+  <text x="390" y="1680" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="700">输入特征 input_feature</text>
+  <text x="390" y="1697" text-anchor="middle" fill="#3b82f6" font-size="10">[B, C, H, W]</text>
+
+  <line x1="390" y1="1705" x2="390" y2="1730" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <!-- ImageLayerNorm -->
+  <rect x="250" y="1735" width="280" height="45" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#ss)"/>
+  <text x="390" y="1755" text-anchor="middle" fill="#1e3a8a" font-size="12" font-weight="700">ImageLayerNorm</text>
+  <text x="390" y="1772" text-anchor="middle" fill="#1d4ed8" font-size="10">RMSNorm → scale × rsqrt(mean(x²)) + shift</text>
+
+  <!-- Split -->
+  <line x1="390" y1="1780" x2="390" y2="1810" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="390" cy="1810" r="5" fill="#2563eb"/>
+  <line x1="390" y1="1810" x2="190" y2="1810" stroke="#2563eb" stroke-width="2"/>
+  <line x1="190" y1="1810" x2="190" y2="1835" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+  <line x1="390" y1="1810" x2="590" y2="1810" stroke="#2563eb" stroke-width="2"/>
+  <line x1="590" y1="1810" x2="590" y2="1835" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <!-- Channel Attention Branch -->
+  <rect x="70" y="1840" width="240" height="35" rx="8" fill="#2563eb" filter="url(#ss)"/>
+  <text x="190" y="1863" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">通道注意力分支</text>
+
+  <line x1="190" y1="1875" x2="190" y2="1895" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="70" y="1900" width="240" height="85" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="190" y="1920" text-anchor="middle" fill="#1e3a8a" font-size="11" font-weight="700">ChannelAttention</text>
+  <text x="190" y="1938" text-anchor="middle" fill="#1d4ed8" font-size="10">① AvgPool2d(1) → Shared MLP</text>
+  <text x="190" y="1953" text-anchor="middle" fill="#1d4ed8" font-size="10">② MaxPool2d(1) → Shared MLP</text>
+  <text x="190" y="1968" text-anchor="middle" fill="#1d4ed8" font-size="10">③ 相加 → Sigmoid → 通道权重</text>
+
+  <line x1="190" y1="1985" x2="190" y2="2005" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="70" y="2010" width="240" height="32" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="190" y="2031" text-anchor="middle" fill="#1e3a8a" font-size="10">权重 × normalized_feature</text>
+
+  <line x1="190" y1="2042" x2="190" y2="2060" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="70" y="2065" width="240" height="32" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="190" y="2086" text-anchor="middle" fill="#1e3a8a" font-size="10">Conv2d(C, C, 1×1) 通道投影</text>
+
+  <!-- Spatial Attention Branch -->
+  <rect x="470" y="1840" width="240" height="35" rx="8" fill="#2563eb" filter="url(#ss)"/>
+  <text x="590" y="1863" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">空间注意力分支</text>
+
+  <line x1="590" y1="1875" x2="590" y2="1895" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="470" y="1900" width="240" height="85" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="590" y="1920" text-anchor="middle" fill="#1e3a8a" font-size="11" font-weight="700">SpatialAttention</text>
+  <text x="590" y="1938" text-anchor="middle" fill="#1d4ed8" font-size="10">① Channel Mean → [B,1,H,W]</text>
+  <text x="590" y="1953" text-anchor="middle" fill="#1d4ed8" font-size="10">② Channel Max → [B,1,H,W]</text>
+  <text x="590" y="1968" text-anchor="middle" fill="#1d4ed8" font-size="10">③ Cat → Conv2d(2→1, k=7) → Sigmoid</text>
+
+  <line x1="590" y1="1985" x2="590" y2="2005" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="470" y="2010" width="240" height="32" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="590" y="2031" text-anchor="middle" fill="#1e3a8a" font-size="10">权重 × normalized_feature</text>
+
+  <line x1="590" y1="2042" x2="590" y2="2060" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <rect x="470" y="2065" width="240" height="32" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="590" y="2086" text-anchor="middle" fill="#1e3a8a" font-size="10">Conv2d(C, C, 1×1) 空间投影</text>
+
+  <!-- Merge addition -->
+  <line x1="190" y1="2097" x2="190" y2="2130" stroke="#2563eb" stroke-width="2"/>
+  <line x1="590" y1="2097" x2="590" y2="2130" stroke="#2563eb" stroke-width="2"/>
+  <line x1="190" y1="2130" x2="590" y2="2130" stroke="#2563eb" stroke-width="2"/>
+  <circle cx="390" cy="2130" r="18" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+  <text x="390" y="2136" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">+</text>
+  <line x1="390" y1="2130" x2="390" y2="2160" stroke="#2563eb" stroke-width="2" marker-end="url(#aB)"/>
+
+  <!-- Output -->
+  <rect x="250" y="2165" width="280" height="45" rx="10" fill="#1e3a8a" filter="url(#ss)"/>
+  <text x="390" y="2185" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">输出特征 output_feature</text>
+  <text x="390" y="2202" text-anchor="middle" fill="#dbeafe" font-size="10">channel_branch + spatial_branch</text>
+
+  <!-- Formula -->
+  <rect x="70" y="2225" width="640" height="50" rx="8" fill="#eef2ff" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="390" y="2248" text-anchor="middle" fill="#312e81" font-size="11" font-weight="700">SCFM 核心公式:</text>
+  <text x="390" y="2268" text-anchor="middle" fill="#4338ca" font-size="10">out = Conv₁ₓ₁(σ(CA(Norm(x))) ⊙ Norm(x)) + Conv₁ₓ₁(σ(SA(Norm(x))) ⊙ Norm(x))</text>
+
+  <!-- Data flow notes -->
+  <rect x="70" y="2285" width="640" height="50" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="390" y="2305" text-anchor="middle" fill="#9a3412" font-size="10" font-weight="700">CA = ChannelAttention (AvgPool+MaxPool → MLP → Sigmoid)</text>
+  <text x="390" y="2325" text-anchor="middle" fill="#c2410c" font-size="10">SA = SpatialAttention (ChannelMean+Max → Cat → Conv → Sigmoid) | σ = Sigmoid | ⊙ = 逐元素乘</text>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4: SACF Internal Flow                                -->
+  <!-- Box: y=1590, h=830 (side by side with Section 3)            -->
+  <!-- ============================================================ -->
+  <rect x="760" y="1590" width="700" height="830" rx="16" fill="#fff" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
+  <rect x="760" y="1590" width="700" height="50" rx="16" fill="url(#sacfDG)"/>
+  <rect x="760" y="1624" width="700" height="16" fill="url(#sacfDG)"/>
+  <text x="1110" y="1622" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">4. SACF 内部流程 (Spectral-guided Adaptive Cross-layer Fusion)</text>
+
+  <!-- Two inputs -->
+  <rect x="820" y="1660" width="220" height="45" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#ss)"/>
+  <text x="930" y="1680" text-anchor="middle" fill="#047857" font-size="11" font-weight="700">高层特征 high_map</text>
+  <text x="930" y="1697" text-anchor="middle" fill="#059669" font-size="10">[B, 768, 16, 16]</text>
+
+  <rect x="1180" y="1660" width="220" height="45" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#ss)"/>
+  <text x="1290" y="1680" text-anchor="middle" fill="#047857" font-size="11" font-weight="700">低层特征 low_map</text>
+  <text x="1290" y="1697" text-anchor="middle" fill="#059669" font-size="10">[B, 768, 16, 16]</text>
+
+  <line x1="930" y1="1705" x2="930" y2="1735" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+  <line x1="1290" y1="1705" x2="1290" y2="1735" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- Spectral Aggregation Branch -->
+  <rect x="800" y="1740" width="260" height="35" rx="8" fill="#059669" filter="url(#ss)"/>
+  <text x="930" y="1763" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">频谱聚合分支</text>
+
+  <line x1="930" y1="1775" x2="930" y2="1795" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <rect x="800" y="1800" width="260" height="95" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="930" y="1820" text-anchor="middle" fill="#064e3b" font-size="10" font-weight="700">EuclideanSpectralFeatureAggregator</text>
+  <text x="930" y="1838" text-anchor="middle" fill="#047857" font-size="10">① Unfold 局部窗口 (3×3)</text>
+  <text x="930" y="1853" text-anchor="middle" fill="#047857" font-size="10">② 计算欧氏距离 dist(center, local)</text>
+  <text x="930" y="1868" text-anchor="middle" fill="#047857" font-size="10">③ Softmax(-dist) → 相似度权重</text>
+  <text x="930" y="1883" text-anchor="middle" fill="#047857" font-size="10">④ 加权求和 + 残差连接</text>
+
+  <line x1="930" y1="1895" x2="930" y2="1915" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <rect x="800" y="1920" width="260" height="32" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="930" y="1941" text-anchor="middle" fill="#064e3b" font-size="10">双线性插值对齐到低层空间尺寸</text>
+
+  <line x1="930" y1="1952" x2="930" y2="1970" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <rect x="800" y="1975" width="260" height="32" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="930" y="1996" text-anchor="middle" fill="#064e3b" font-size="10">aligned_high_level_spectral</text>
+
+  <!-- Spatial Enhancement Branch -->
+  <rect x="1160" y="1740" width="260" height="35" rx="8" fill="#059669" filter="url(#ss)"/>
+  <text x="1290" y="1763" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">空间增强分支</text>
+
+  <line x1="1290" y1="1775" x2="1290" y2="1795" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <rect x="1160" y="1800" width="260" height="95" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1290" y="1820" text-anchor="middle" fill="#064e3b" font-size="10" font-weight="700">SpatialDetailEnhancer</text>
+  <text x="1290" y="1838" text-anchor="middle" fill="#047857" font-size="10">① AvgPool(k=3,s=2,p=1) → 低频</text>
+  <text x="1290" y="1853" text-anchor="middle" fill="#047857" font-size="10">② Conv3×3 精炼低频 → 上采样还原</text>
+  <text x="1290" y="1868" text-anchor="middle" fill="#047857" font-size="10">③ 高频 = 原始 - 上采样低频</text>
+  <text x="1290" y="1883" text-anchor="middle" fill="#047857" font-size="10">④ 高频注意力门控 + 低频融合 + 残差</text>
+
+  <line x1="1290" y1="1895" x2="1290" y2="1915" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <rect x="1160" y="1920" width="260" height="32" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1290" y="1941" text-anchor="middle" fill="#064e3b" font-size="10">enhanced_low_level_spatial</text>
+
+  <!-- Adaptive Fusion -->
+  <line x1="930" y1="2007" x2="930" y2="2040" stroke="#059669" stroke-width="2"/>
+  <line x1="1290" y1="1952" x2="1290" y2="2040" stroke="#059669" stroke-width="2"/>
+
+  <rect x="800" y="2045" width="620" height="35" rx="8" fill="#059669" filter="url(#ss)"/>
+  <text x="1110" y="2068" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">自适应融合 (Adaptive Fusion)</text>
+
+  <line x1="1110" y1="2040" x2="1110" y2="2045" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- Fusion detail -->
+  <rect x="800" y="2090" width="620" height="95" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1110" y="2112" text-anchor="middle" fill="#064e3b" font-size="11" font-weight="700">融合权重计算:</text>
+  <text x="1110" y="2132" text-anchor="middle" fill="#047857" font-size="10">① spectral_response = mean(aligned_high, dim=C) → [B, 1, H, W]</text>
+  <text x="1110" y="2150" text-anchor="middle" fill="#047857" font-size="10">② spatial_response = mean(enhanced_low, dim=C) → [B, 1, H, W]</text>
+  <text x="1110" y="2168" text-anchor="middle" fill="#047857" font-size="10">③ weights = Sigmoid(Conv2d(Cat(spectral_resp, spatial_resp))) → [B, 2, H, W]</text>
+
+  <line x1="1110" y1="2080" x2="1110" y2="2090" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- Weighted sum -->
+  <rect x="800" y="2195" width="620" height="40" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1110" y="2212" text-anchor="middle" fill="#064e3b" font-size="11" font-weight="700">加权融合:</text>
+  <text x="1110" y="2228" text-anchor="middle" fill="#047857" font-size="10">fused = w_spectral × aligned_high + w_spatial × enhanced_low</text>
+
+  <line x1="1110" y1="2185" x2="1110" y2="2195" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- Output refinement -->
+  <rect x="800" y="2245" width="620" height="35" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1110" y="2268" text-anchor="middle" fill="#064e3b" font-size="11" font-weight="700">输出精炼: Conv2d(768→768, 1×1) → BN → ReLU</text>
+
+  <line x1="1110" y1="2235" x2="1110" y2="2245" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- SACF Output -->
+  <rect x="980" y="2295" width="260" height="45" rx="10" fill="#064e3b" filter="url(#ss)"/>
+  <text x="1110" y="2315" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">SACF 输出特征</text>
+  <text x="1110" y="2332" text-anchor="middle" fill="#d1fae5" font-size="10">[B, 768, 16, 16]</text>
+
+  <line x1="1110" y1="2280" x2="1110" y2="2295" stroke="#059669" stroke-width="2" marker-end="url(#aGr)"/>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5: Legend & Summary                                   -->
+  <!-- Box: y=2460, h=220                                          -->
+  <!-- ============================================================ -->
+  <rect x="40" y="2460" width="1420" height="220" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="2" filter="url(#sh)"/>
+  <rect x="40" y="2460" width="1420" height="48" rx="16" fill="#1e293b"/>
+  <rect x="40" y="2492" width="1420" height="16" fill="#1e293b"/>
+  <text x="750" y="2492" text-anchor="middle" fill="#fff" font-size="20" font-weight="700">5. 图例与总结 (Legend &amp; Summary)</text>
+
+  <!-- Legend -->
+  <rect x="70" y="2520" width="22" height="22" rx="5" fill="#2563eb"/>
+  <text x="102" y="2537" fill="#2563eb" font-size="13" font-weight="700">SCFM 路径 (蓝色)</text>
+
+  <rect x="70" y="2550" width="22" height="22" rx="5" fill="#059669"/>
+  <text x="102" y="2567" fill="#059669" font-size="13" font-weight="700">SACF 路径 (绿色)</text>
+
+  <rect x="70" y="2580" width="22" height="22" rx="5" fill="#d97706"/>
+  <text x="102" y="2597" fill="#d97706" font-size="13" font-weight="700">决策节点 (琥珀色)</text>
+
+  <rect x="70" y="2610" width="22" height="22" rx="5" fill="#64748b"/>
+  <text x="102" y="2627" fill="#64748b" font-size="13" font-weight="700">共享路径 (灰色)</text>
+
+  <!-- Summary -->
+  <rect x="400" y="2515" width="540" height="150" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="670" y="2542" text-anchor="middle" fill="#6b21a8" font-size="14" font-weight="700">关键流程总结</text>
+  <text x="670" y="2568" text-anchor="middle" fill="#7e22ce" font-size="11">1. SCFM: 在 Patch 融合后、多尺度聚合前应用</text>
+  <text x="670" y="2588" text-anchor="middle" fill="#7e22ce" font-size="11">2. SACF: 在 Backbone 第6层提取低层特征，与高层融合</text>
+  <text x="670" y="2608" text-anchor="middle" fill="#7e22ce" font-size="11">3. 两者可同时启用，SACF 先于 SCFM 执行</text>
+  <text x="670" y="2628" text-anchor="middle" fill="#7e22ce" font-size="11">4. SCFM 增强空间+通道 | SACF 融合跨层频谱+空间</text>
+
+  <!-- Config reference -->
+  <rect x="980" y="2515" width="460" height="150" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="1210" y="2542" text-anchor="middle" fill="#b45309" font-size="14" font-weight="700">配置参考 (eprbench.yaml)</text>
+  <text x="1210" y="2570" text-anchor="middle" fill="#92400e" font-size="11" font-family="'JetBrains Mono','Consolas',monospace">mods:</text>
+  <text x="1210" y="2590" text-anchor="middle" fill="#92400e" font-size="11" font-family="'JetBrains Mono','Consolas',monospace">  scfm: {enabled: true}</text>
+  <text x="1210" y="2610" text-anchor="middle" fill="#92400e" font-size="11" font-family="'JetBrains Mono','Consolas',monospace">  sacf: {enabled: true, layer_idx: 6}</text>
+  <text x="1210" y="2635" text-anchor="middle" fill="#92400e" font-size="11">默认: 两者均启用</text>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6: Full Execution Order                               -->
+  <!-- Box: y=2720, h=640                                          -->
+  <!-- ============================================================ -->
+  <rect x="40" y="2720" width="1420" height="640" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="2" filter="url(#sh)"/>
+  <rect x="40" y="2720" width="1420" height="50" rx="16" fill="#4c1d95"/>
+  <rect x="40" y="2754" width="1420" height="16" fill="#4c1d95"/>
+  <text x="750" y="2752" text-anchor="middle" fill="#fff" font-size="20" font-weight="700">6. 完整执行顺序 (Full Execution Order)</text>
+
+  <!-- Step 1 -->
+  <rect x="120" y="2790" width="1260" height="42" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <circle cx="147" cy="2811" r="14" fill="#2563eb"/>
+  <text x="147" y="2816" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">1</text>
+  <text x="175" y="2816" fill="#1e40af" font-size="12" font-weight="700">输入图像 x → DINOv2 Backbone (若 SACF 启用，注册 Hook 于 blocks[6] 捕获低层特征)</text>
+
+  <line x1="750" y1="2832" x2="750" y2="2845" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 2 -->
+  <rect x="120" y="2845" width="1260" height="42" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <circle cx="147" cy="2866" r="14" fill="#059669"/>
+  <text x="147" y="2871" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">2</text>
+  <text x="175" y="2871" fill="#064e3b" font-size="12" font-weight="700">提取 Token: x_norm_clstoken (全局), x_prenorm[:,1:,:] (Patch), low_level_tokens (若 Hook 捕获)</text>
+
+  <line x1="750" y1="2887" x2="750" y2="2900" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 3 -->
+  <rect x="120" y="2900" width="1260" height="42" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+  <circle cx="147" cy="2921" r="14" fill="#059669"/>
+  <text x="147" y="2926" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">3</text>
+  <text x="175" y="2926" fill="#064e3b" font-size="12" font-weight="700">SACF: 构建 high_map / low_map → 频谱聚合 + 空间增强 → 自适应加权融合 → 输出精炼</text>
+
+  <line x1="750" y1="2942" x2="750" y2="2955" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 4 -->
+  <rect x="120" y="2955" width="1260" height="42" rx="8" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+  <circle cx="147" cy="2976" r="14" fill="#e11d48"/>
+  <text x="147" y="2981" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">4</text>
+  <text x="175" y="2981" fill="#9f1239" font-size="12" font-weight="700">文本引导 Patch 融合: 相似度计算 → Top-25% 选择 → 语义增强 (若 text_encoder_clip 可用)</text>
+
+  <line x1="750" y1="2997" x2="750" y2="3010" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 5 -->
+  <rect x="120" y="3010" width="1260" height="42" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="147" cy="3031" r="14" fill="#2563eb"/>
+  <text x="147" y="3036" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">5</text>
+  <text x="175" y="3036" fill="#1e3a8a" font-size="12" font-weight="700">SCFM: ImageLayerNorm → 通道注意力分支 + 空间注意力分支 → 逐元素相加</text>
+
+  <line x1="750" y1="3052" x2="750" y2="3065" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 6 -->
+  <rect x="120" y="3065" width="1260" height="42" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <circle cx="147" cy="3086" r="14" fill="#64748b"/>
+  <text x="147" y="3091" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">6</text>
+  <text x="175" y="3091" fill="#334155" font-size="12" font-weight="700">其他 Mod 模块 (IGR / LGFP / FBGW) — 按配置依次应用</text>
+
+  <line x1="750" y1="3107" x2="750" y2="3120" stroke="#64748b" stroke-width="1.5" marker-end="url(#aG)"/>
+
+  <!-- Step 7 -->
+  <rect x="120" y="3120" width="1260" height="42" rx="8" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <circle cx="147" cy="3141" r="14" fill="#7c3aed"/>
+  <text x="147" y="3146" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">7</text>
+  <text x="175" y="3146" fill="#5b21b6" font-size="12" font-weight="700">多尺度聚合: L2Norm → GeM → 4+9 子区域描述子 → TransformerEncoder → L2Norm → 输出 [B, 10752]</text>
+
+  <!-- Note -->
+  <rect x="120" y="3185" width="1260" height="55" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="2"/>
+  <text x="750" y="3208" text-anchor="middle" fill="#c2410c" font-size="13" font-weight="700">⚠ 执行顺序: SACF (步骤3) 在 Backbone 内部 Hook 层执行 → SCFM (步骤5) 在 Patch 融合后执行</text>
+  <text x="750" y="3228" text-anchor="middle" fill="#9a3412" font-size="11">SACF 修改 high_map 后才进入文本融合和 SCFM，因此 SACF 的输出直接影响 SCFM 的输入</text>
+
+  <!-- Watermark -->
+  <text x="750" y="3360" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="500">EPRBench Lightning — SCFM &amp; SACF Method Flowchart — 2026</text>
+</svg>

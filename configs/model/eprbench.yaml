@@ -28,9 +28,9 @@ net:
             enabled: false
             layer_idx: 6
         scfm:
-            enabled: true
+            enabled: false
         sacf:
-            enabled: true
+            enabled: false
             layer_idx: 6
         igr:
             enabled: false
@@ -45,6 +45,8 @@ net:
         fbgw:
             enabled: false
             reduction_ratio: 16
+        bim:
+            enabled: false
 
 # Loss parameters
 lambda_contrast: 0.1

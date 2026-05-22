@@ -18,6 +18,7 @@ from src.models.components.frequency_enhancement import (
     map_to_tokens,
     tokens_to_map,
 )
+from src.models.components.mods.bim import BrainInspiredModule
 from src.models.components.mods.cross_spectral_refinement import (
     CrossSpectralAttentionFeatureRefinement,
 )
@@ -200,6 +201,11 @@ class SGVPRNet(nn.Module):
                 reduction_ratio=fbgw_cfg.get("reduction_ratio", 16),
             )
 
+        bim_cfg = self.mods.get("bim", {})
+        self.use_bim = bim_cfg.get("enabled", False)
+        if self.use_bim:
+            self.bim = BrainInspiredModule(channels=self.embed_dim)
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -340,6 +346,9 @@ class SGVPRNet(nn.Module):
 
         if self.use_fbgw:
             x_p = self.fbgw(x_p)
+
+        if self.use_bim:
+            x_p = self.bim(x_p)
 
         x10, x11, x12, x13 = (
             self.aggregation(x_p[:, :, 0:8, 0:8]),

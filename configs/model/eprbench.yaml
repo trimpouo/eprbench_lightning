@@ -28,9 +28,9 @@ net:
             enabled: false
             layer_idx: 6
         scfm:
-            enabled: false
+            enabled: true
         sacf:
-            enabled: false
+            enabled: true
             layer_idx: 6
         igr:
             enabled: false
@@ -47,6 +47,13 @@ net:
             reduction_ratio: 16
         bim:
             enabled: false
+        spm:
+            enabled: false
+            prompt_channels: 768
+            num_prompt_experts: 5
+            prompt_spatial_size: 96
+            router_input_dim: 768
+            num_active_experts: 1
 
 # Loss parameters
 lambda_contrast: 0.1

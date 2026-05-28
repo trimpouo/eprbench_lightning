@@ -27,6 +27,7 @@ from src.models.components.mods.igr import InfoGatedReconstructUnit
 from src.models.components.mods.lgfp import LowFrequencyGuidedFeaturePurification
 from src.models.components.mods.sacf import SpectralSpatialAdaptiveFusion
 from src.models.components.mods.scfm import SpatialChannelFeatureModulator
+from src.models.components.mods.sparse_prompt import SparsePromptModule
 
 
 class GeM(nn.Module):
@@ -206,6 +207,17 @@ class SGVPRNet(nn.Module):
         if self.use_bim:
             self.bim = BrainInspiredModule(channels=self.embed_dim)
 
+        spm_cfg = self.mods.get("spm", {})
+        self.use_spm = spm_cfg.get("enabled", False)
+        if self.use_spm:
+            self.spm = SparsePromptModule(
+                prompt_channels=spm_cfg.get("prompt_channels", self.embed_dim),
+                num_prompt_experts=spm_cfg.get("num_prompt_experts", 5),
+                prompt_spatial_size=spm_cfg.get("prompt_spatial_size", 96),
+                router_input_dim=spm_cfg.get("router_input_dim", self.embed_dim),
+                num_active_experts=spm_cfg.get("num_active_experts", 1),
+            )
+
         if self.use_frequency_enhance:
             self.freq_enhancer = EventFrequencyEnhancer(
                 dim=self.embed_dim,
@@ -349,6 +361,10 @@ class SGVPRNet(nn.Module):
 
         if self.use_bim:
             x_p = self.bim(x_p)
+
+        if self.use_spm:
+            spm_prompt = self.spm(x_p)
+            x_p = x_p + spm_prompt
 
         x10, x11, x12, x13 = (
             self.aggregation(x_p[:, :, 0:8, 0:8]),

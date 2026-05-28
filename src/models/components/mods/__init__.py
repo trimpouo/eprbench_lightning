@@ -7,6 +7,7 @@ from src.models.components.mods.igr import InfoGatedReconstructUnit
 from src.models.components.mods.lgfp import LowFrequencyGuidedFeaturePurification
 from src.models.components.mods.sacf import SpectralSpatialAdaptiveFusion
 from src.models.components.mods.scfm import SpatialChannelFeatureModulator
+from src.models.components.mods.sparse_prompt import SparsePromptModule
 
 __all__ = [
     "BrainInspiredModule",
@@ -14,6 +15,7 @@ __all__ = [
     "FrequencyBandGuidedUnit",
     "InfoGatedReconstructUnit",
     "LowFrequencyGuidedFeaturePurification",
+    "SparsePromptModule",
     "SpatialChannelFeatureModulator",
     "SpectralSpatialAdaptiveFusion",
 ]

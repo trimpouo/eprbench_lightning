@@ -1,8 +1,8 @@
 _target_: src.data.eprbench_datamodule.EPRBenchDataModule
 
 dataset_folder: ${paths.data_dir}/EventVPR
-train_batch_size: 12
-infer_batch_size: 12
+train_batch_size: 8
+infer_batch_size: 8
 num_workers: 4
 pin_memory: true
 

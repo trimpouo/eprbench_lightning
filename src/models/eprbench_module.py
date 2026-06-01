@@ -63,7 +63,7 @@ class EPRBenchLitModule(LightningModule):
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(ignore=['net'], logger=False)
 
         self.net = net
         self.text_encoder = CLIPTextEncoder(

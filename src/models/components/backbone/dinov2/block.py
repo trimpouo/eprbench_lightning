@@ -22,7 +22,7 @@ from .layer_scale import LayerScale
 from .mlp import Mlp
 
 import torch.nn.functional as F
-from timm.models.layers import DropPath
+from timm.layers import DropPath
 import math
 
 logger = logging.getLogger("dinov2")

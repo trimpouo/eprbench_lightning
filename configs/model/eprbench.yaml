@@ -28,9 +28,9 @@ net:
             enabled: false
             layer_idx: 6
         scfm:
-            enabled: true
+            enabled: false
         sacf:
-            enabled: true
+            enabled: false
             layer_idx: 6
         igr:
             enabled: false

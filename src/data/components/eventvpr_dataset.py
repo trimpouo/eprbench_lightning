@@ -203,7 +203,9 @@ class EventVPRDataset(Dataset):
         
         # Print text description loading statistics
         if self.use_text:
-            print(f"Evaluation set: Loaded text descriptions for {len(self.text_descriptions)} images (Total {len(self.all_images_paths)} images)")
+            # Only count image-level keys (not scene-level keys) for accurate reporting
+            img_text_count = sum(1 for k in self.text_descriptions.keys() if k.endswith((".jpg", ".jpeg", ".png")))
+            print(f"Evaluation set: Loaded text descriptions for {img_text_count} images (Total {len(self.all_images_paths)} images)")
 
     def __getitem__(self, idx):
         if self.split == "train":

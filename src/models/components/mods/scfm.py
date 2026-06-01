@@ -144,5 +144,5 @@ class SpatialChannelFeatureModulator(nn.Module):
         spatial_modulated_feature = spatial_weight * normalized_feature
         spatial_branch_output = self.spatial_projection(spatial_modulated_feature)
 
-        output_feature = channel_branch_output + spatial_branch_output
+        output_feature = channel_branch_output + spatial_branch_output + input_feature
         return output_feature

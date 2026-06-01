@@ -50,8 +50,11 @@ def train(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     :param cfg: A DictConfig configuration composed by Hydra.
     :return: A tuple with metrics and dict with all instantiated objects.
     """
-    # Enable Tensor Cores on Ampere or newer GPUs by allowing TF32 in matmul
-    torch.set_float32_matmul_precision("high")
+    # set float32 matmul precision (TF32 on Ampere+ GPUs)
+    matmul_precision = cfg.get("float32_matmul_precision")
+    if matmul_precision:
+        torch.set_float32_matmul_precision(matmul_precision)
+        log.info(f"Set float32 matmul precision to '{matmul_precision}'")
 
     # set seed for random number generators in pytorch, numpy and python.random
     if cfg.get("seed"):

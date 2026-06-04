@@ -81,8 +81,10 @@ bash train.sh
 
 Key hyperparameters (aligned with the original implementation):
 - `pretrained_foundation: true` — loads DINOv2 weights
-- `lambda_contrast: 0.25` — contrastive learning weight
+- `lambda_contrast: 0.15` — contrastive learning weight (γ in the paper)
 - `temperature: 0.07` — temperature for CLIP-style loss
+
+> **Implementation note:** The token similarity matrix in `network.py` uses `-1e4` for masked fill instead of the original `-1e9`. This is an intentional compromise to avoid `inf` overflows when training with `precision=16-mixed`. If you need exact numerical alignment with the original fp32 training, switch to the fp32 trainer (`trainer=fp32`).
 
 ---
 

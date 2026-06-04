@@ -22,12 +22,29 @@ from src.models.components.mods.bim import BrainInspiredModule
 from src.models.components.mods.cross_spectral_refinement import (
     CrossSpectralAttentionFeatureRefinement,
 )
+from src.models.components.mods.event_aware_token_selector import (
+    EventAwareTokenSelector,
+)
+from src.models.components.mods.event_cues import EventCueExtractor
 from src.models.components.mods.fbgw import FrequencyBandGuidedUnit
 from src.models.components.mods.igr import InfoGatedReconstructUnit
 from src.models.components.mods.lgfp import LowFrequencyGuidedFeaturePurification
-from src.models.components.mods.sacf import SpectralSpatialAdaptiveFusion
-from src.models.components.mods.scfm import SpatialChannelFeatureModulator
+from src.models.components.mods.sacf import (
+    EventStabilitySACF,
+    SpectralSpatialAdaptiveFusion,
+)
+from src.models.components.mods.scfm import (
+    EventReliableSCFM,
+    SpatialChannelFeatureModulator,
+)
 from src.models.components.mods.sparse_prompt import SparsePromptModule
+from src.models.components.mods.temporal_event_aggregator import (
+    TemporalEventFrameAggregator,
+)
+
+# ImageNet normalization stats for approximate de-normalization
+_IMAGENET_MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+_IMAGENET_STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
 
 
 class GeM(nn.Module):
@@ -56,7 +73,6 @@ class GeM(nn.Module):
 def gem(x, p=3, eps=1e-6, work_with_tokens=False):
     if work_with_tokens:
         x = x.permute(0, 2, 1)
-        # unseqeeze to maintain compatibility with Flatten
         return (
             F.avg_pool1d(x.clamp(min=eps).pow(p), (x.size(-1)))
             .pow(1.0 / p)
@@ -113,8 +129,6 @@ class SGVPRNet(nn.Module):
             L2Norm(), GeM(work_with_tokens=None), Flatten()
         )
 
-        # In TransformerEncoderLayer, "batch_first=False" means the input tensors should be provided as (seq, batch, feature) to encode on the "seq" dimension.
-        # Our input tensor is provided as (batch, seq, feature), which performs encoding on the "batch" dimension.
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=768,
             nhead=16,
@@ -123,9 +137,7 @@ class SGVPRNet(nn.Module):
             dropout=0.1,
             batch_first=False,
         )
-        self.encoder = nn.TransformerEncoder(
-            encoder_layer, num_layers=2
-        )  # Cross-image encoder
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=2)
         self.text_alpha = nn.Parameter(torch.tensor(0.5))
         self.text_alpha_patch = nn.Parameter(torch.tensor(0.5))
         self.text_token_ln = nn.LayerNorm(768, eps=1e-6)
@@ -148,6 +160,38 @@ class SGVPRNet(nn.Module):
         self.embed_dim = 768
 
         self.mods = mods if mods is not None else {}
+
+        # Event cues
+        ec_cfg = self.mods.get("event_cues", {})
+        self.use_event_cues = ec_cfg.get("enabled", False)
+        if self.use_event_cues:
+            self.event_cue_extractor = EventCueExtractor(
+                patch_size=ec_cfg.get("patch_size", 14)
+            )
+
+        # Event-aware token selector
+        eats_cfg = self.mods.get("event_aware_token_selector", {})
+        self.use_event_aware_selector = eats_cfg.get("enabled", False)
+        if self.use_event_aware_selector:
+            self.event_selector = EventAwareTokenSelector(
+                rho_min=eats_cfg.get("rho_min", 0.15),
+                rho_max=eats_cfg.get("rho_max", 0.35),
+                rho_base=eats_cfg.get("rho_base", 0.25),
+                w_structure=eats_cfg.get("w_structure", 0.25),
+                w_noise=eats_cfg.get("w_noise", 0.20),
+                w_empty=eats_cfg.get("w_empty", 0.50),
+                tau=eats_cfg.get("tau", 0.07),
+            )
+
+        # Temporal fusion
+        tf_cfg = self.mods.get("temporal_fusion", {})
+        self.use_temporal_fusion = tf_cfg.get("enabled", False)
+        if self.use_temporal_fusion:
+            self.temporal_aggregator = TemporalEventFrameAggregator(
+                channels=self.embed_dim
+            )
+
+        # Cross-spectral
         cs_cfg = self.mods.get("cross_spectral", {})
         self.use_cross_spectral = cs_cfg.get("enabled", False)
         self.cross_spectral_layer_idx = cs_cfg.get("layer_idx", 6)
@@ -156,26 +200,56 @@ class SGVPRNet(nn.Module):
                 self.embed_dim
             )
 
+        # SCFM / ER-SCFM
         scfm_cfg = self.mods.get("scfm", {})
         self.use_scfm = scfm_cfg.get("enabled", False)
+        self.use_event_reliable_scfm = scfm_cfg.get("use_event_reliable", False)
         if self.use_scfm:
-            self.scfm = SpatialChannelFeatureModulator(channels=self.embed_dim)
+            if self.use_event_reliable_scfm:
+                self.scfm = EventReliableSCFM(
+                    channels=self.embed_dim,
+                    use_event_cues=(
+                        self.use_event_cues
+                        and scfm_cfg.get("use_event_cues", True)
+                    ),
+                )
+            else:
+                self.scfm = SpatialChannelFeatureModulator(
+                    channels=self.embed_dim
+                )
 
+        # SACF / ES-SACF
         sacf_cfg = self.mods.get("sacf", {})
         self.use_sacf = sacf_cfg.get("enabled", False)
+        self.use_event_stability_sacf = sacf_cfg.get("use_event_stability", False)
         self.sacf_layer_idx = sacf_cfg.get("layer_idx", 6)
         if self.use_sacf:
-            self.sacf = SpectralSpatialAdaptiveFusion(in_channels=self.embed_dim)
+            if self.use_event_stability_sacf:
+                self.sacf = EventStabilitySACF(
+                    in_channels=self.embed_dim,
+                    local_window_size=sacf_cfg.get("local_window_size", 3),
+                    use_event_cues=(
+                        self.use_event_cues
+                        and sacf_cfg.get("use_event_cues", True)
+                    ),
+                    use_semantic_score=(
+                        self.use_event_aware_selector
+                        and sacf_cfg.get("use_semantic_score", True)
+                    ),
+                )
+            else:
+                self.sacf = SpectralSpatialAdaptiveFusion(
+                    in_channels=self.embed_dim
+                )
 
+        # Other optional mods (unchanged)
         igr_cfg = self.mods.get("igr", {})
         self.use_igr = igr_cfg.get("enabled", False)
-        igr_gate_threshold = igr_cfg.get("gate_threshold", 0.5)
-        igr_num_groups = igr_cfg.get("num_groups", 16)
         if self.use_igr:
             self.igr = InfoGatedReconstructUnit(
                 in_channels=self.embed_dim,
-                gate_threshold=igr_gate_threshold,
-                num_groups=igr_num_groups,
+                gate_threshold=igr_cfg.get("gate_threshold", 0.5),
+                num_groups=igr_cfg.get("num_groups", 16),
             )
 
         lgfp_cfg = self.mods.get("lgfp", {})
@@ -230,6 +304,16 @@ class SGVPRNet(nn.Module):
         else:
             self.freq_enhancer = None
 
+    def _extract_backbone_features(self, x):
+        """Helper to run backbone and return dict of features."""
+        return self.backbone(x)
+
+    def _get_event_cues(self, x_raw, hw):
+        """Extract event cues if enabled, otherwise return None."""
+        if not self.use_event_cues or x_raw is None:
+            return None
+        return self.event_cue_extractor(x_raw, out_hw=hw)
+
     def forward(
         self,
         x,
@@ -238,7 +322,67 @@ class SGVPRNet(nn.Module):
         text_mask: torch.Tensor = None,
         raw_texts: list = None,
         return_aux: bool = False,
+        x_raw: torch.Tensor = None,
     ):
+        """Forward pass with optional event-aware modules.
+
+        :param x: Input images [B, C, H, W] or [B, T, C, H, W].
+        :param text: Sentence-level text embeddings.
+        :param text_tokens: Token-level text embeddings.
+        :param text_mask: Attention mask for text tokens.
+        :param raw_texts: List of raw text strings.
+        :param return_aux: Whether to return auxiliary outputs.
+        :param x_raw: Optional unnormalized raw images. If None and
+            ``use_event_cues`` is enabled, an approximate de-normalization
+            is applied internally.
+        :return: Descriptors [B, D] or tuple with aux dict.
+        """
+        # Handle temporal input [B, T, C, H, W]
+        if x.dim() == 5:
+            B, T, C, H_img, W_img = x.shape
+            x_flat = x.view(B * T, C, H_img, W_img)
+            if x_raw is not None and x_raw.dim() == 5:
+                x_raw_flat = x_raw.view(B * T, C, H_img, W_img)
+            else:
+                x_raw_flat = x_raw
+            return self._forward_temporal(
+                x_flat,
+                text=text,
+                text_tokens=text_tokens,
+                text_mask=text_mask,
+                raw_texts=raw_texts,
+                return_aux=return_aux,
+                x_raw=x_raw_flat,
+                temporal_shape=(B, T),
+            )
+
+        return self._forward_single(
+            x,
+            text=text,
+            text_tokens=text_tokens,
+            text_mask=text_mask,
+            raw_texts=raw_texts,
+            return_aux=return_aux,
+            x_raw=x_raw,
+        )
+
+    def _forward_single(
+        self,
+        x,
+        text,
+        text_tokens,
+        text_mask,
+        raw_texts,
+        return_aux,
+        x_raw,
+    ):
+        # Approximate raw if needed
+        if x_raw is None and self.use_event_cues:
+            device = x.device
+            mean = _IMAGENET_MEAN.to(device)
+            std = _IMAGENET_STD.to(device)
+            x_raw = x * std + mean
+
         low_level_tokens = None
         needs_low_level = self.use_cross_spectral or self.use_sacf
         active_layer_idx = None
@@ -264,7 +408,11 @@ class SGVPRNet(nn.Module):
         B, P, D = x["x_prenorm"].shape
         W = H = int(math.sqrt(P - 1))
         x0 = x["x_norm_clstoken"]
-        x_patch = x["x_prenorm"][:, 1:, :]  # 提取 patch tokens (B, N, D)
+        x_patch = x["x_prenorm"][:, 1:, :]
+
+        # Event cues at token grid resolution
+        event_cues = self._get_event_cues(x_raw, hw=(H, W))
+        semantic_score_map = None
 
         if needs_low_level and low_level_tokens is not None:
             low_patch = low_level_tokens[:, 1:, :]
@@ -276,15 +424,22 @@ class SGVPRNet(nn.Module):
                 high_map = self.cross_spectral_refiner(high_map, low_map)
 
             if self.use_sacf:
-                high_map = self.sacf(high_map, low_map)
+                if self.use_event_stability_sacf:
+                    high_map = self.sacf(
+                        high_map,
+                        low_map,
+                        event_cues=event_cues,
+                        semantic_score_map=semantic_score_map,
+                    )
+                else:
+                    high_map = self.sacf(high_map, low_map)
 
-            # Preserve original dtype to avoid AMP dtype mismatches downstream
             high_map = high_map.to(orig_dtype)
             x_patch = high_map.permute(0, 2, 3, 1).reshape(B, W * H, D)
 
         image_global_raw = x0
 
-        # Frequency enhancement on patch map
+        # Frequency enhancement
         freq_info: Dict[str, torch.Tensor] = {}
         patch_map = None
         if self.freq_enhancer is not None:
@@ -292,13 +447,15 @@ class SGVPRNet(nn.Module):
             patch_map, freq_info = self.freq_enhancer(patch_map)
             x_patch = map_to_tokens(patch_map)
 
+        # Text encoding
         if self.text_encoder_clip is not None and raw_texts is not None:
-            text = self.text_encoder_clip(raw_texts)  # (B, 768)
+            text = self.text_encoder_clip(raw_texts)
             tokens_out = self.text_encoder_clip.encode_batch_tokens(raw_texts)
-            text_tokens = tokens_out["tokens"].to(x0.device)  # (B, L, D_clip)
-            text_mask = tokens_out["mask"].to(x0.device)  # (B, L)
+            text_tokens = tokens_out["tokens"].to(x0.device)
+            text_mask = tokens_out["mask"].to(x0.device)
 
-        # Patch Fusion
+        # Patch Fusion / Event-Aware Token Selection
+        token_score_map = None
         if text_tokens is not None:
             device = x_patch.device
             B, N, D = x_patch.shape
@@ -307,48 +464,91 @@ class SGVPRNet(nn.Module):
             x_patch_norm = F.normalize(x_patch, p=2, dim=-1)
             t_tokens_norm = F.normalize(t_tokens, p=2, dim=-1)
 
-            sim_matrix = torch.bmm(x_patch_norm, t_tokens_norm.transpose(1, 2))
+            if self.use_event_aware_selector and event_cues is not None:
+                topk_idx, word_idx, token_score, rho, score_map = (
+                    self.event_selector(
+                        x_patch_norm,
+                        t_tokens_norm,
+                        event_cues,
+                        hw=(H, W),
+                    )
+                )
+                # Update semantic score map for downstream SACF
+                semantic_score_map = score_map
 
-            if text_mask is not None:
-                sim_matrix = sim_matrix.masked_fill(text_mask.unsqueeze(1) == 0, -1e4)
+                selected_x = torch.gather(
+                    x_patch, 1, topk_idx.unsqueeze(-1).expand(-1, -1, D)
+                )
+                selected_token_idx = torch.gather(word_idx, 1, topk_idx)
+                selected_text_feats = torch.gather(
+                    t_tokens,
+                    1,
+                    selected_token_idx.unsqueeze(-1).expand(-1, -1, D),
+                )
+                # Adaptive injection strength per token
+                token_score_selected = torch.gather(token_score, 1, topk_idx)
+                alpha_i = torch.sigmoid(
+                    self.text_alpha_patch + token_score_selected.unsqueeze(-1)
+                )
+                enhanced_part = selected_x * selected_text_feats
+                x_out = x_patch.clone()
+                x_out.scatter_add_(
+                    1,
+                    topk_idx.unsqueeze(-1).expand(-1, -1, D),
+                    alpha_i * enhanced_part,
+                )
+                x_patch = x_out
+                token_score_map = score_map
+            else:
+                # Original text-only top-k path
+                sim_matrix = torch.bmm(
+                    x_patch_norm, t_tokens_norm.transpose(1, 2)
+                )
+                if text_mask is not None:
+                    sim_matrix = sim_matrix.masked_fill(
+                        text_mask.unsqueeze(1) == 0, -1e4
+                    )
+                max_sim, max_token_idx = sim_matrix.max(dim=-1)
 
-            max_sim, max_token_idx = sim_matrix.max(dim=-1)
+                score = max_sim
+                if self.use_freq_topk and "freq_energy" in freq_info:
+                    freq_energy = freq_info["freq_energy"].to(max_sim.dtype)
+                    if freq_energy.shape == max_sim.shape:
+                        score = score + self.freq_score_weight * freq_energy
 
-            score = max_sim
-            if self.use_freq_topk and "freq_energy" in freq_info:
-                freq_energy = freq_info["freq_energy"].to(max_sim.dtype)
-                if freq_energy.shape == max_sim.shape:
-                    score = score + self.freq_score_weight * freq_energy
+                k = max(int(self.mask_keep_ratio * N), 1)
+                _, topk_idx = torch.topk(
+                    score, k=k, dim=1, largest=True, sorted=False
+                )
+                selected_x = torch.gather(
+                    x_patch, 1, topk_idx.unsqueeze(-1).expand(-1, -1, D)
+                )
+                selected_token_idx = torch.gather(max_token_idx, 1, topk_idx)
+                selected_text_feats = torch.gather(
+                    t_tokens,
+                    1,
+                    selected_token_idx.unsqueeze(-1).expand(-1, -1, D),
+                )
+                enhanced_part = selected_x * selected_text_feats
+                x_out = x_patch.clone()
+                x_out.scatter_add_(
+                    1,
+                    topk_idx.unsqueeze(-1).expand(-1, -1, D),
+                    self.text_alpha_patch * enhanced_part,
+                )
+                x_patch = x_out
 
-            k = max(int(self.mask_keep_ratio * N), 1)
-
-            _, topk_idx = torch.topk(score, k=k, dim=1, largest=True, sorted=False)
-
-            selected_x = torch.gather(
-                x_patch, 1, topk_idx.unsqueeze(-1).expand(-1, -1, D)
-            )
-            selected_token_idx = torch.gather(max_token_idx, 1, topk_idx)
-            selected_text_feats = torch.gather(
-                t_tokens, 1, selected_token_idx.unsqueeze(-1).expand(-1, -1, D)
-            )
-            enhanced_part = selected_x * selected_text_feats
-            x_out = x_patch.clone()
-            x_out.scatter_add_(
-                1,
-                topk_idx.unsqueeze(-1).expand(-1, -1, D),
-                self.text_alpha_patch * enhanced_part,
-            )
-
-            x_patch = x_out
-
-        # Use enhanced patch_map if available, otherwise reshape original x_patch
+        # Reshape patch tokens to map
         if patch_map is not None:
             x_p = patch_map
         else:
             x_p = x_patch.view(B, W, H, D).permute(0, 3, 1, 2)
 
         if self.use_scfm:
-            x_p = self.scfm(x_p)
+            if self.use_event_reliable_scfm:
+                x_p = self.scfm(x_p, event_cues=event_cues)
+            else:
+                x_p = self.scfm(x_p)
 
         if self.use_igr:
             x_p = self.igr(x_p)
@@ -411,9 +611,61 @@ class SGVPRNet(nn.Module):
                 "image_global_raw": image_global_raw,
                 "patch_map": patch_map,
                 "freq_info": freq_info,
+                "event_cues": event_cues,
+                "token_score_map": token_score_map,
             }
             return x, aux
         return x
+
+    def _forward_temporal(
+        self,
+        x_flat,
+        text,
+        text_tokens,
+        text_mask,
+        raw_texts,
+        return_aux,
+        x_raw,
+        temporal_shape,
+    ):
+        B, T = temporal_shape
+        # Run single-frame logic for all frames
+        out_list = []
+        aux_list = []
+        for t_i in range(T):
+            x_t = x_flat[t_i * B : (t_i + 1) * B]
+            x_raw_t = None
+            if x_raw is not None:
+                x_raw_t = x_raw[t_i * B : (t_i + 1) * B]
+            out_t, aux_t = self._forward_single(
+                x_t,
+                text=text,
+                text_tokens=text_tokens,
+                text_mask=text_mask,
+                raw_texts=raw_texts,
+                return_aux=True,
+                x_raw=x_raw_t,
+            )
+            out_list.append(out_t)
+            aux_list.append(aux_t)
+
+        desc_t = torch.stack(out_list, dim=1)  # [B, T, D]
+
+        # Simple mean fusion for descriptors (can be upgraded to TEFA)
+        desc = desc_t.mean(dim=1)
+        desc = F.normalize(desc, p=2, dim=-1)
+
+        if return_aux:
+            aux = {
+                "image_global_raw": aux_list[0]["image_global_raw"],
+                "patch_map": aux_list[0]["patch_map"],
+                "freq_info": aux_list[0]["freq_info"],
+                "event_cues": aux_list[0].get("event_cues"),
+                "token_score_map": aux_list[0].get("token_score_map"),
+                "frame_descriptors": desc_t,
+            }
+            return desc, aux
+        return desc
 
 
 def get_backbone(pretrained_foundation, foundation_model_path):

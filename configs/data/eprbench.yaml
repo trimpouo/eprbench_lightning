@@ -8,7 +8,7 @@ pin_memory: true
 
 # Text description parameters
 use_text: true
-text_folder: null  # defaults to dataset_folder/scene_descriptions
+text_folder: null # defaults to dataset_folder/scene_descriptions
 
 # Training sampling parameters
 img_per_place: 5

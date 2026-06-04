@@ -4,6 +4,7 @@ import faiss
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 
@@ -40,6 +41,10 @@ class EPRBenchLitModule(LightningModule):
         use_freq_contrastive_loss: bool = False,
         freq_loss_weight: float = 0.0,
         freq_num_negatives: int = 2,
+        use_temporal_consistency: bool = False,
+        temporal_consistency_weight: float = 0.05,
+        text_dropout_prob: float = 0.0,
+        word_dropout_prob: float = 0.0,
     ) -> None:
         """Initialize the EPRBenchLitModule.
 
@@ -58,11 +63,13 @@ class EPRBenchLitModule(LightningModule):
         :param efficient_ram_testing: Use RAM-efficient testing.
         :param majority_weight: Weight for majority voting.
         :param compile: Whether to compile the model with torch.compile.
+        :param use_temporal_consistency: Whether to use temporal consistency loss.
+        :param temporal_consistency_weight: Weight for temporal consistency loss.
+        :param text_dropout_prob: Probability to drop entire text conditioning.
+        :param word_dropout_prob: Probability to drop individual word tokens.
         """
         super().__init__()
 
-        # this line allows to access init params with 'self.hparams' attribute
-        # also ensures init params will be stored in ckpt
         self.save_hyperparameters(ignore=['net'], logger=False)
 
         self.net = net
@@ -90,10 +97,8 @@ class EPRBenchLitModule(LightningModule):
                         nn.init.constant_(m2.weight, 0.00001)
                         nn.init.constant_(m2.bias, 0.00001)
 
-        # loss function is imported from components.loss
         self.criterion = loss_function
 
-        # Frequency contrastive loss (optional)
         self.use_freq_contrastive_loss = use_freq_contrastive_loss
         self.freq_loss_weight = freq_loss_weight
         if self.use_freq_contrastive_loss:
@@ -103,17 +108,20 @@ class EPRBenchLitModule(LightningModule):
         else:
             self.freq_contrastive_loss = None
 
-        # metric objects for calculating and averaging losses across batches
+        # Temporal consistency
+        self.use_temporal_consistency = use_temporal_consistency
+        self.temporal_consistency_weight = temporal_consistency_weight
+
+        # metric objects
         self.train_loss_total = MeanMetric()
         self.train_loss_tri = MeanMetric()
         self.train_loss_i2t = MeanMetric()
         self.train_loss_t2i = MeanMetric()
         self.train_loss_freq = MeanMetric()
+        self.train_loss_temp = MeanMetric()
 
-        # for tracking best so far validation R@1
         self.val_r1_best = MaxMetric()
 
-        # validation/test feature storage
         self._val_features: List[torch.Tensor] = []
         self._val_indices: List[torch.Tensor] = []
         self._test_features: List[torch.Tensor] = []
@@ -146,9 +154,46 @@ class EPRBenchLitModule(LightningModule):
 
     def on_train_start(self) -> None:
         """Lightning hook that is called when training begins."""
-        # by default lightning executes validation step sanity checks before training starts,
-        # so it's worth to make sure validation metrics don't store results from these checks
         self.val_r1_best.reset()
+
+    def _apply_text_dropout(
+        self,
+        text_vec: torch.Tensor,
+        text_tokens: torch.Tensor,
+        text_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Apply text dropout during training.
+
+        :param text_vec: Sentence embeddings.
+        :param text_tokens: Token embeddings.
+        :param text_mask: Token mask.
+        :return: Potentially zeroed text tensors.
+        """
+        if not self.training:
+            return text_vec, text_tokens, text_mask
+
+        # Full text dropout
+        if (
+            self.hparams.text_dropout_prob > 0
+            and torch.rand(1).item() < self.hparams.text_dropout_prob
+        ):
+            text_vec = torch.zeros_like(text_vec)
+            text_tokens = torch.zeros_like(text_tokens)
+            text_mask = torch.zeros_like(text_mask)
+            return text_vec, text_tokens, text_mask
+
+        # Word token dropout
+        if self.hparams.word_dropout_prob > 0:
+            b, l, _ = text_tokens.shape
+            mask = (
+                torch.rand(b, l, 1, device=text_tokens.device)
+                > self.hparams.word_dropout_prob
+            )
+            text_tokens = text_tokens * mask
+            # Update mask to reflect dropped words
+            text_mask = text_mask * mask.squeeze(-1).long()
+
+        return text_vec, text_tokens, text_mask
 
     def training_step(
         self, batch: Tuple[torch.Tensor, ...], batch_idx: int
@@ -162,18 +207,16 @@ class EPRBenchLitModule(LightningModule):
         images, place_id, text = batch
 
         BS, N, C, H, W = images.shape
-        # Flatten batch and place dimensions
         images = images.view(BS * N, C, H, W)
         labels = place_id.view(BS * N)
 
         if text is not None and self.hparams.use_text:
-            # Flatten nested text list
             text = [t for sublist in text for t in sublist]
-            # Sentence embeddings (BS*N, 768)
             text_vec = self.text_encoder(text)
-            # Token embeddings and mask
             text_tokens, attn_mask = self.text_encoder.encode_batch_tokens(text)
-            # Forward pass with text conditioning
+            text_vec, text_tokens, attn_mask = self._apply_text_dropout(
+                text_vec, text_tokens, attn_mask
+            )
             descriptors, aux = self.forward(
                 images,
                 text=text_vec,
@@ -181,7 +224,6 @@ class EPRBenchLitModule(LightningModule):
                 text_mask=attn_mask,
                 return_aux=True,
             )
-            # Aggregate per-place features for contrastive loss
             image_global_raw_place = aux["image_global_raw"].view(BS, N, -1).mean(dim=1)
             text_vec_place = text_vec.view(BS, N, -1).mean(dim=1)
         else:
@@ -190,7 +232,6 @@ class EPRBenchLitModule(LightningModule):
             text_vec_place = None
             aux = {}
 
-        # Compute combined loss
         loss, tri_loss, loss_i2t, loss_t2i = self.criterion(
             descriptors,
             labels,
@@ -199,6 +240,47 @@ class EPRBenchLitModule(LightningModule):
             lambda_contrast=self.hparams.lambda_contrast,
             temperature=self.hparams.temperature,
         )
+
+        # Temporal consistency loss
+        temp_loss = None
+        if (
+            self.use_temporal_consistency
+            and "frame_descriptors" in aux
+            and aux["frame_descriptors"] is not None
+        ):
+            desc_fused = F.normalize(descriptors, dim=-1)
+            desc_t = F.normalize(aux["frame_descriptors"], dim=-1)
+            # Cosine distance per frame
+            l_temp = 1.0 - (desc_t * desc_fused.unsqueeze(1)).sum(dim=-1)
+            temp_loss = l_temp.mean()
+            loss = loss + self.temporal_consistency_weight * temp_loss
+            self.train_loss_temp(temp_loss)
+            self.log(
+                "train/temp_loss",
+                self.train_loss_temp,
+                on_step=False,
+                on_epoch=True,
+                prog_bar=False,
+            )
+        elif (
+            self.use_temporal_consistency
+            and N > 1
+        ):
+            # If no frame_descriptors from network, compute from reshaped descriptors
+            desc_per_place = descriptors.view(BS, N, -1)
+            desc_fused = F.normalize(desc_per_place.mean(dim=1), dim=-1)
+            desc_t = F.normalize(desc_per_place, dim=-1)
+            l_temp = 1.0 - (desc_t * desc_fused.unsqueeze(1)).sum(dim=-1)
+            temp_loss = l_temp.mean()
+            loss = loss + self.temporal_consistency_weight * temp_loss
+            self.train_loss_temp(temp_loss)
+            self.log(
+                "train/temp_loss",
+                self.train_loss_temp,
+                on_step=False,
+                on_epoch=True,
+                prog_bar=False,
+            )
 
         # Optional frequency contrastive loss
         freq_loss = None
@@ -217,7 +299,6 @@ class EPRBenchLitModule(LightningModule):
                 prog_bar=False,
             )
 
-        # Log frequency gamma if available
         freq_info = aux.get("freq_info", {}) if isinstance(aux, dict) else {}
         freq_gamma = freq_info.get("freq_gamma", None)
         if freq_gamma is not None:
@@ -229,7 +310,6 @@ class EPRBenchLitModule(LightningModule):
                 prog_bar=False,
             )
 
-        # update and log metrics
         self.train_loss_total(loss)
         self.train_loss_tri(tri_loss)
         self.train_loss_i2t(loss_i2t)
@@ -315,17 +395,14 @@ class EPRBenchLitModule(LightningModule):
         database_num = eval_ds.database_num
         queries_num = eval_ds.queries_num
 
-        # Sort features by their original dataset indices
         sorted_features = np.empty(
             (len(eval_ds), self.hparams.features_dim), dtype=np.float32
         )
         sorted_features[all_indices] = all_features
 
-        # Split into database and queries
         database_features = sorted_features[:database_num]
         queries_features = sorted_features[database_num:]
 
-        # FAISS search
         faiss_index = faiss.IndexFlatL2(self.hparams.features_dim)
         faiss_index.add(database_features)
 
@@ -333,7 +410,6 @@ class EPRBenchLitModule(LightningModule):
             queries_features, max(self.hparams.recall_values)
         )
 
-        # Compute recalls
         positives_per_query = eval_ds.get_positives()
         recalls = np.zeros(len(self.hparams.recall_values))
         for query_index, pred in enumerate(predictions):
@@ -344,7 +420,6 @@ class EPRBenchLitModule(LightningModule):
 
         recalls = recalls / queries_num * 100
 
-        # Log recalls
         for val, rec in zip(self.hparams.recall_values, recalls):
             self.log(f"val/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
 
@@ -399,17 +474,14 @@ class EPRBenchLitModule(LightningModule):
         database_num = eval_ds.database_num
         queries_num = eval_ds.queries_num
 
-        # Sort features by their original dataset indices
         sorted_features = np.empty(
             (len(eval_ds), self.hparams.features_dim), dtype=np.float32
         )
         sorted_features[all_indices] = all_features
 
-        # Split into database and queries
         database_features = sorted_features[:database_num]
         queries_features = sorted_features[database_num:]
 
-        # FAISS search
         faiss_index = faiss.IndexFlatL2(self.hparams.features_dim)
         faiss_index.add(database_features)
 
@@ -417,7 +489,6 @@ class EPRBenchLitModule(LightningModule):
             queries_features, max(self.hparams.recall_values)
         )
 
-        # Compute recalls
         positives_per_query = eval_ds.get_positives()
         recalls = np.zeros(len(self.hparams.recall_values))
         for query_index, pred in enumerate(predictions):
@@ -428,7 +499,6 @@ class EPRBenchLitModule(LightningModule):
 
         recalls = recalls / queries_num * 100
 
-        # Log recalls
         for val, rec in zip(self.hparams.recall_values, recalls):
             self.log(f"test/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
 
@@ -453,7 +523,6 @@ class EPRBenchLitModule(LightningModule):
 
         :return: A dict containing the configured optimizers and learning-rate schedulers.
         """
-        # Replicate original param grouping: model params and text encoder params
         model_params = [p for p in self.net.parameters() if p.requires_grad]
         text_params = [p for p in self.text_encoder.parameters() if p.requires_grad]
 
@@ -462,11 +531,11 @@ class EPRBenchLitModule(LightningModule):
         )
 
         if self.hparams.scheduler is not None:
-            # Compute step_size based on train dataloader length
-            # scheduler step is per batch (interval="step")
             train_ds = self.trainer.datamodule.data_train
             train_batch_size = self.trainer.datamodule.hparams.train_batch_size
-            steps_per_epoch = (len(train_ds) + train_batch_size - 1) // train_batch_size
+            steps_per_epoch = (
+                len(train_ds) + train_batch_size - 1
+            ) // train_batch_size
             step_size = steps_per_epoch * 3
 
             scheduler = self.hparams.scheduler(optimizer=optimizer, step_size=step_size)

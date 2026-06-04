@@ -200,3 +200,111 @@ class SpectralSpatialAdaptiveFusion(nn.Module):
 
         output_feature = self.output_refine_conv(fused_spectral_spatial_feature)
         return output_feature
+
+
+class EventStabilitySACF(nn.Module):
+    """Event-Stability Guided SACF (ES-SACF).
+
+    Extends the original SACF with event-cue-guided fusion and a residual
+    scale initialized to zero. The fusion gate uses softmax over two
+    branches (high / low) so that weights sum to one.
+
+    :param in_channels: Number of input channels.
+    :param local_window_size: Local window size for spectral aggregation.
+    :param use_event_cues: Whether to inject event cues into the fusion gate.
+    :param use_semantic_score: Whether to inject semantic score into the gate.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        local_window_size: int = 3,
+        use_event_cues: bool = True,
+        use_semantic_score: bool = True,
+    ):
+        super().__init__()
+        self.use_event_cues = use_event_cues
+        self.use_semantic_score = use_semantic_score
+
+        self.spectral_feature_aggregator = EuclideanSpectralFeatureAggregator(
+            local_window_size=local_window_size
+        )
+        self.spatial_detail_enhancer = SpatialDetailEnhancer(
+            in_channels=in_channels
+        )
+
+        extra_gate_channels = 2  # response_high + response_low
+        if use_event_cues:
+            extra_gate_channels += 4  # density, gradient, burst, empty_mask
+        if use_semantic_score:
+            extra_gate_channels += 1
+
+        self.fusion_gate = nn.Sequential(
+            nn.Conv2d(extra_gate_channels, 16, kernel_size=1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(16, 2, kernel_size=1, bias=False),
+        )
+
+        self.out_proj = nn.Sequential(
+            nn.Conv2d(in_channels, in_channels, kernel_size=1, bias=False),
+            nn.BatchNorm2d(in_channels),
+            nn.ReLU(inplace=True),
+        )
+        self.res_scale = nn.Parameter(torch.zeros(1))
+
+    def forward(
+        self,
+        high_level_spectral_feature: torch.Tensor,
+        low_level_spatial_feature: torch.Tensor,
+        event_cues: dict[str, torch.Tensor] | None = None,
+        semantic_score_map: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Fuse high-level and low-level features with event guidance.
+
+        :param high_level_spectral_feature: High-level feature map.
+        :param low_level_spatial_feature: Low-level feature map.
+        :param event_cues: Optional event cues dict.
+        :param semantic_score_map: Optional semantic score map [B, 1, H, W].
+        :return: Fused feature map.
+        """
+        aggregated_high = self.spectral_feature_aggregator(
+            high_level_spectral_feature, high_level_spectral_feature
+        )
+        aligned_high = F.interpolate(
+            aggregated_high,
+            size=low_level_spatial_feature.shape[2:],
+            mode="bilinear",
+            align_corners=True,
+        )
+
+        enhanced_low = self.spatial_detail_enhancer(low_level_spatial_feature)
+
+        response_high = aligned_high.mean(dim=1, keepdim=True)
+        response_low = enhanced_low.mean(dim=1, keepdim=True)
+
+        fusion_inputs = [response_high, response_low]
+        if self.use_event_cues and event_cues is not None:
+            fusion_inputs += [
+                event_cues["density"],
+                event_cues["gradient"],
+                event_cues["burst"],
+                event_cues["empty_mask"],
+            ]
+        if self.use_semantic_score:
+            if semantic_score_map is not None:
+                fusion_inputs += [semantic_score_map]
+            else:
+                fusion_inputs += [
+                    torch.zeros_like(response_high)
+                ]
+
+        alpha_logits = self.fusion_gate(torch.cat(fusion_inputs, dim=1))
+        alpha = torch.softmax(alpha_logits, dim=1)
+
+        fused = (
+            alpha[:, 0:1] * aligned_high + alpha[:, 1:2] * enhanced_low
+        )
+        out = high_level_spectral_feature + self.res_scale * self.out_proj(
+            fused
+        )
+        return out

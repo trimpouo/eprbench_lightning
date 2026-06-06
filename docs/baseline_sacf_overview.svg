@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="960" viewBox="0 0 1500 960" role="img" aria-labelledby="title desc">
+  <title id="title">Baseline plus SACF overview for EPRBench Lightning</title>
+  <desc id="desc">Bilingual flowchart showing data loading, baseline SGVPR forwarding, SACF insertion, training losses, and FAISS evaluation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2ff"/>
+    </linearGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="sacf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="train" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 14px Arial, "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .section { font: 700 15px Arial, "Noto Sans CJK SC", sans-serif; fill: #ffffff; }
+      .boxTitle { font: 700 14px Arial, "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .boxText { font: 12px Arial, "Noto Sans CJK SC", sans-serif; fill: #334155; }
+      .small { font: 11px Arial, "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .mono { font: 11px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .label { font: 700 12px Arial, "Noto Sans CJK SC", sans-serif; fill: #1e293b; }
+      .callout { font: 700 12px Arial, "Noto Sans CJK SC", sans-serif; fill: #92400e; }
+      .arrow { stroke: #334155; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .arrowThin { stroke: #64748b; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #ea580c; stroke-width: 2.2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; filter: url(#shadow); }
+      .soft { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.1; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="960" fill="url(#bg)"/>
+  <text x="750" y="50" text-anchor="middle" class="title">Baseline + SACF Overall Workflow / Baseline + SACF 总体流程</text>
+  <text x="750" y="76" text-anchor="middle" class="subtitle">Original SGVPR baseline with one added Spectral-guided Adaptive Cross-layer Fusion block</text>
+
+  <rect x="60" y="120" width="270" height="54" rx="10" fill="url(#base)" filter="url(#shadow)"/>
+  <text x="195" y="143" text-anchor="middle" class="section">1. Data / 数据</text>
+  <text x="195" y="162" text-anchor="middle" class="section">EventVPR + scene text</text>
+
+  <rect x="45" y="205" width="300" height="170" rx="12" class="card"/>
+  <text x="195" y="230" text-anchor="middle" class="boxTitle">Dataset Loader / 数据加载</text>
+  <text x="70" y="260" class="boxText">Train: group frames by place id</text>
+  <text x="70" y="282" class="boxText">训练: 按地点采样多张事件帧</text>
+  <text x="70" y="312" class="boxText">Eval: database + query images</text>
+  <text x="70" y="334" class="boxText">评估: 编码库图与查询图</text>
+  <text x="70" y="360" class="mono">images, place_id, text_desc</text>
+
+  <rect x="420" y="120" width="300" height="54" rx="10" fill="url(#base)" filter="url(#shadow)"/>
+  <text x="570" y="143" text-anchor="middle" class="section">2. Baseline Encoder / 基线编码器</text>
+  <text x="570" y="162" text-anchor="middle" class="section">SGVPRNet</text>
+
+  <rect x="390" y="205" width="360" height="135" rx="12" class="card"/>
+  <text x="570" y="230" text-anchor="middle" class="boxTitle">DINOv2 ViT-B/14 Backbone</text>
+  <text x="420" y="260" class="boxText">Frozen foundation model; adapters remain trainable</text>
+  <text x="420" y="282" class="boxText">冻结预训练主干；仅 adapter 等新增参数可训练</text>
+  <text x="420" y="312" class="mono">tokens: [B, 1 + H_p W_p, 768]</text>
+
+  <rect x="390" y="390" width="360" height="128" rx="12" class="card"/>
+  <text x="570" y="416" text-anchor="middle" class="boxTitle">Text-Guided Patch Fusion / 文本引导 Patch 融合</text>
+  <text x="420" y="446" class="boxText">OpenCLIP token embeddings match visual patches</text>
+  <text x="420" y="468" class="boxText">选择 top 25% 语义相关 patch 并做乘性增强</text>
+  <text x="420" y="496" class="mono">x_patch[topk] += alpha * x_patch * text_token</text>
+
+  <rect x="390" y="568" width="360" height="128" rx="12" class="card"/>
+  <text x="570" y="594" text-anchor="middle" class="boxTitle">Multi-Scale Aggregation / 多尺度聚合</text>
+  <text x="420" y="624" class="boxText">CLS token + 4 regions + 9 regions = 14 tokens</text>
+  <text x="420" y="646" class="boxText">每个区域: L2Norm → GeM → Flatten</text>
+  <text x="420" y="674" class="mono">descriptor: [B, 14 * 768] = [B, 10752]</text>
+
+  <rect x="855" y="120" width="310" height="54" rx="10" fill="url(#sacf)" filter="url(#shadow)"/>
+  <text x="1010" y="143" text-anchor="middle" class="section">3. SACF Insertion / SACF 插入点</text>
+  <text x="1010" y="162" text-anchor="middle" class="section">before text fusion</text>
+
+  <rect x="830" y="205" width="360" height="170" rx="12" class="card"/>
+  <text x="1010" y="230" text-anchor="middle" class="boxTitle">Hook Low-Level Tokens / Hook 低层 Token</text>
+  <text x="860" y="260" class="boxText">Register forward hook on backbone block layer_idx</text>
+  <text x="860" y="282" class="boxText">默认在第 6 层捕获低层 token</text>
+  <text x="860" y="312" class="mono">model.net.mods.sacf.enabled=True</text>
+  <text x="860" y="334" class="mono">layer_idx=6, use_event_stability=False</text>
+  <text x="860" y="360" class="callout">Original SACF, not ES-SACF / 原始 SACF，非 ES-SACF</text>
+
+  <rect x="830" y="430" width="360" height="170" rx="12" class="card"/>
+  <text x="1010" y="456" text-anchor="middle" class="boxTitle">Cross-Layer Feature Fusion / 跨层特征融合</text>
+  <text x="860" y="486" class="boxText">High map: final patch tokens with semantics</text>
+  <text x="860" y="508" class="boxText">Low map: intermediate tokens with detail cues</text>
+  <text x="860" y="538" class="boxText">SACF fuses spectral response and spatial detail</text>
+  <text x="860" y="560" class="boxText">输出替换 high_map 后继续基线后半段</text>
+  <text x="860" y="586" class="mono">[B, 768, H_p, W_p] → [B, 768, H_p, W_p]</text>
+
+  <rect x="1260" y="120" width="260" height="54" rx="10" fill="url(#train)" filter="url(#shadow)" transform="translate(-40 0)"/>
+  <text x="1350" y="143" text-anchor="middle" class="section">4. Output / 输出</text>
+  <text x="1350" y="162" text-anchor="middle" class="section">training &amp; retrieval</text>
+
+  <rect x="1225" y="205" width="310" height="150" rx="12" class="card" transform="translate(-40 0)"/>
+  <text x="1340" y="230" text-anchor="middle" class="boxTitle">Training Loss / 训练损失</text>
+  <text x="1210" y="260" class="boxText">MultiSimilarityLoss with online mining</text>
+  <text x="1210" y="282" class="boxText">按 place_id 做度量学习</text>
+  <text x="1210" y="312" class="boxText">Optional image-text contrastive term</text>
+  <text x="1210" y="334" class="mono">loss = tri + lambda * (i2t + t2i)</text>
+
+  <rect x="1225" y="430" width="310" height="150" rx="12" class="card" transform="translate(-40 0)"/>
+  <text x="1340" y="456" text-anchor="middle" class="boxTitle">Evaluation / 检索评估</text>
+  <text x="1210" y="486" class="boxText">Encode database and query descriptors</text>
+  <text x="1210" y="508" class="boxText">FAISS IndexFlatL2 nearest-neighbor search</text>
+  <text x="1210" y="538" class="boxText">同地点 database 命中即为 positive</text>
+  <text x="1210" y="562" class="mono">R@1, R@5, R@10, R@100</text>
+
+  <path class="arrow" d="M345 290 C365 290, 365 272, 390 272"/>
+  <path class="arrow" d="M750 272 C790 272, 790 286, 830 286"/>
+  <path class="arrow" d="M1010 375 L1010 430"/>
+  <path class="dash" d="M830 520 C775 520, 795 456, 750 456"/>
+  <path class="arrow" d="M570 340 L570 390"/>
+  <path class="arrow" d="M570 518 L570 568"/>
+  <path class="arrow" d="M750 632 C880 632, 980 640, 1185 300"/>
+  <path class="arrow" d="M750 646 C910 720, 1080 690, 1185 500"/>
+
+  <rect x="70" y="765" width="1360" height="120" rx="14" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.4"/>
+  <text x="90" y="794" class="label">Key difference / 关键差异</text>
+  <text x="90" y="824" class="boxText">Baseline keeps only the final DINOv2 patch map before text-guided fusion. Baseline+SACF additionally taps one intermediate transformer block and fuses its lower-level detail map with the final semantic map.</text>
+  <text x="90" y="850" class="boxText">Baseline 只使用 DINOv2 最终 patch map 进入文本引导融合；Baseline+SACF 额外从中间层取低层细节 map，与最终语义 map 融合后再继续原基线流程。</text>
+  <text x="90" y="874" class="small">No SCFM, no cross_spectral refiner, no event cues, no event-aware selector unless explicitly enabled by extra Hydra overrides.</text>
+</svg>

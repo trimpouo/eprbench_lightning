@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1180" viewBox="0 0 1500 1180" role="img" aria-labelledby="title desc">
+  <title id="title">SACF internal flow</title>
+  <desc id="desc">Bilingual internal diagram of Spectral-guided Adaptive Cross-layer Fusion, including spectral aggregation, spatial detail enhancement, adaptive weighting, and output refinement.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#ecfeff"/>
+    </linearGradient>
+    <linearGradient id="hi" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="lo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#059669"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="fuse" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#dc2626"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 14px Arial, "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .head { font: 700 15px Arial, "Noto Sans CJK SC", sans-serif; fill: #ffffff; }
+      .boxTitle { font: 700 14px Arial, "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .boxText { font: 12px Arial, "Noto Sans CJK SC", sans-serif; fill: #334155; }
+      .mono { font: 11px "JetBrains Mono", Consolas, monospace; fill: #334155; }
+      .small { font: 11px Arial, "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .formula { font: 12px "JetBrains Mono", Consolas, monospace; fill: #7c2d12; }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; filter: url(#shadow); }
+      .softBlue { fill: #eff6ff; stroke: #bfdbfe; stroke-width: 1.2; }
+      .softGreen { fill: #ecfdf5; stroke: #a7f3d0; stroke-width: 1.2; }
+      .softOrange { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1.2; }
+      .arrow { stroke: #334155; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+      .arrowThin { stroke: #64748b; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #ea580c; stroke-width: 2.2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1500" height="1180" fill="url(#bg)"/>
+  <text x="750" y="50" text-anchor="middle" class="title">SACF Internal Flow / SACF 内部流程</text>
+  <text x="750" y="76" text-anchor="middle" class="subtitle">Spectral-guided Adaptive Cross-layer Fusion in docs/baseline_sacf_pipeline.md</text>
+
+  <rect x="90" y="125" width="420" height="62" rx="12" fill="url(#hi)" filter="url(#shadow)"/>
+  <text x="300" y="150" text-anchor="middle" class="head">High-Level Spectral Feature / 高层语义特征</text>
+  <text x="300" y="172" text-anchor="middle" class="head">final DINOv2 patch map: H</text>
+
+  <rect x="990" y="125" width="420" height="62" rx="12" fill="url(#lo)" filter="url(#shadow)"/>
+  <text x="1200" y="150" text-anchor="middle" class="head">Low-Level Spatial Feature / 低层空间特征</text>
+  <text x="1200" y="172" text-anchor="middle" class="head">hooked block map: L</text>
+
+  <rect x="80" y="245" width="440" height="210" rx="12" class="card"/>
+  <text x="300" y="272" text-anchor="middle" class="boxTitle">A. Euclidean Spectral Feature Aggregator</text>
+  <text x="300" y="294" text-anchor="middle" class="boxTitle">A. 欧氏距离谱特征聚合</text>
+  <text x="115" y="326" class="boxText">1. Unfold local 3x3 neighbors around each token</text>
+  <text x="115" y="348" class="boxText">1. 对每个位置展开局部 3x3 邻域</text>
+  <text x="115" y="378" class="boxText">2. Compute distance from center vector to neighbors</text>
+  <text x="115" y="400" class="boxText">2. 计算中心向量与邻域向量的欧氏距离</text>
+  <text x="115" y="430" class="formula">weight = softmax(-distance)</text>
+
+  <rect x="80" y="505" width="440" height="175" rx="12" class="softBlue"/>
+  <text x="300" y="532" text-anchor="middle" class="boxTitle">Aggregated High Feature / 聚合后的高层特征</text>
+  <text x="115" y="564" class="boxText">Weighted local sum plus residual center feature</text>
+  <text x="115" y="586" class="boxText">局部加权求和，并加回中心特征作为残差</text>
+  <text x="115" y="616" class="formula">H_agg = sum(weight * H_neighbor) + H</text>
+  <text x="115" y="646" class="boxText">Then bilinear-align to low-level spatial size</text>
+  <text x="115" y="666" class="boxText">随后双线性对齐到低层特征分辨率</text>
+
+  <rect x="980" y="245" width="440" height="210" rx="12" class="card"/>
+  <text x="1200" y="272" text-anchor="middle" class="boxTitle">B. Spatial Detail Enhancer</text>
+  <text x="1200" y="294" text-anchor="middle" class="boxTitle">B. 空间细节增强</text>
+  <text x="1015" y="326" class="boxText">1. AvgPool extracts a low-frequency approximation</text>
+  <text x="1015" y="348" class="boxText">1. AvgPool 提取低频近似</text>
+  <text x="1015" y="378" class="boxText">2. High-frequency detail = original - upsampled low-freq</text>
+  <text x="1015" y="400" class="boxText">2. 高频细节 = 原特征 - 上采样低频特征</text>
+  <text x="1015" y="430" class="formula">D_hf = L - upsample(avgpool(L))</text>
+
+  <rect x="980" y="505" width="440" height="175" rx="12" class="softGreen"/>
+  <text x="1200" y="532" text-anchor="middle" class="boxTitle">Enhanced Low Feature / 增强后的低层特征</text>
+  <text x="1015" y="564" class="boxText">1x1 attention gates high-frequency details</text>
+  <text x="1015" y="586" class="boxText">1x1 注意力门控高频细节</text>
+  <text x="1015" y="616" class="formula">A = sigmoid(conv1x1(D_hf))</text>
+  <text x="1015" y="646" class="formula">L_enh = conv1x1([D_hf * A + D_hf, L_low]) + L</text>
+
+  <rect x="580" y="750" width="440" height="210" rx="12" class="card"/>
+  <text x="800" y="777" text-anchor="middle" class="boxTitle">C. Adaptive Fusion Weight Generator</text>
+  <text x="800" y="799" text-anchor="middle" class="boxTitle">C. 自适应融合权重生成器</text>
+  <text x="615" y="833" class="boxText">Channel-mean response maps summarize both branches</text>
+  <text x="615" y="855" class="boxText">对两个分支做通道均值，得到全局响应图</text>
+  <text x="615" y="887" class="formula">R_h = mean_channel(H_aligned)</text>
+  <text x="615" y="909" class="formula">R_l = mean_channel(L_enh)</text>
+  <text x="615" y="939" class="formula">[w_h, w_l] = sigmoid(conv1x1([R_h, R_l]))</text>
+
+  <rect x="580" y="1010" width="440" height="108" rx="12" fill="url(#fuse)" filter="url(#shadow)"/>
+  <text x="800" y="1041" text-anchor="middle" class="head">D. Fused SACF Output / SACF 输出</text>
+  <text x="800" y="1066" text-anchor="middle" class="head">Y = Conv1x1 + BN + ReLU</text>
+  <text x="800" y="1090" text-anchor="middle" class="head">replaces baseline high_map before text fusion</text>
+
+  <path class="arrow" d="M300 187 L300 245"/>
+  <path class="arrow" d="M300 455 L300 505"/>
+  <path class="arrow" d="M300 680 C310 755, 480 828, 580 840"/>
+  <path class="arrow" d="M1200 187 L1200 245"/>
+  <path class="arrow" d="M1200 455 L1200 505"/>
+  <path class="arrow" d="M1200 680 C1185 755, 1045 828, 1020 840"/>
+  <path class="arrow" d="M800 960 L800 1010"/>
+  <path class="arrowThin" d="M520 592 C620 592, 650 720, 705 750"/>
+  <path class="arrowThin" d="M980 592 C900 610, 870 720, 855 750"/>
+
+  <rect x="585" y="240" width="330" height="250" rx="12" class="softOrange"/>
+  <text x="750" y="268" text-anchor="middle" class="boxTitle">Code Mapping / 代码对应</text>
+  <text x="615" y="306" class="mono">SpectralSpatialAdaptiveFusion.forward()</text>
+  <text x="615" y="334" class="boxText">高层分支: spectral_feature_aggregator</text>
+  <text x="615" y="358" class="boxText">低层分支: spatial_detail_enhancer</text>
+  <text x="615" y="386" class="boxText">权重分支: adaptive_fusion_weight_generator</text>
+  <text x="615" y="414" class="boxText">输出分支: output_refine_conv</text>
+  <text x="615" y="456" class="small">Original SACF uses sigmoid branch weights. ES-SACF is a separate class.</text>
+
+  <path class="dash" d="M585 365 C525 365, 535 350, 520 350"/>
+  <path class="dash" d="M915 365 C950 365, 945 350, 980 350"/>
+</svg>

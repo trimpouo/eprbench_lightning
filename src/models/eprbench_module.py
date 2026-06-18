@@ -45,6 +45,8 @@ class EPRBenchLitModule(LightningModule):
         temporal_consistency_weight: float = 0.05,
         text_dropout_prob: float = 0.0,
         word_dropout_prob: float = 0.0,
+        sacf_residual_loss_weight: float = 0.0,
+        sacf_noise_loss_weight: float = 0.0,
     ) -> None:
         """Initialize the EPRBenchLitModule.
 
@@ -67,6 +69,8 @@ class EPRBenchLitModule(LightningModule):
         :param temporal_consistency_weight: Weight for temporal consistency loss.
         :param text_dropout_prob: Probability to drop entire text conditioning.
         :param word_dropout_prob: Probability to drop individual word tokens.
+        :param sacf_residual_loss_weight: Weight for SE-RSACF residual regularization.
+        :param sacf_noise_loss_weight: Weight for SE-RSACF low-detail noise regularization.
         """
         super().__init__()
 
@@ -119,6 +123,8 @@ class EPRBenchLitModule(LightningModule):
         self.train_loss_t2i = MeanMetric()
         self.train_loss_freq = MeanMetric()
         self.train_loss_temp = MeanMetric()
+        self.train_loss_sacf_residual = MeanMetric()
+        self.train_loss_sacf_noise = MeanMetric()
 
         self.val_r1_best = MaxMetric()
 
@@ -298,6 +304,52 @@ class EPRBenchLitModule(LightningModule):
                 on_epoch=True,
                 prog_bar=False,
             )
+
+        sacf_aux = aux.get("sacf_aux", None) if isinstance(aux, dict) else None
+        if sacf_aux is not None:
+            sacf_residual_loss = sacf_aux.get("residual_loss", None)
+            sacf_noise_loss = sacf_aux.get("noise_loss", None)
+
+            if sacf_residual_loss is not None:
+                if self.hparams.sacf_residual_loss_weight > 0:
+                    loss = (
+                        loss
+                        + self.hparams.sacf_residual_loss_weight
+                        * sacf_residual_loss
+                    )
+                self.train_loss_sacf_residual(sacf_residual_loss)
+                self.log(
+                    "train/sacf_residual_loss",
+                    self.train_loss_sacf_residual,
+                    on_step=False,
+                    on_epoch=True,
+                    prog_bar=False,
+                )
+
+            if sacf_noise_loss is not None:
+                if self.hparams.sacf_noise_loss_weight > 0:
+                    loss = (
+                        loss
+                        + self.hparams.sacf_noise_loss_weight * sacf_noise_loss
+                    )
+                self.train_loss_sacf_noise(sacf_noise_loss)
+                self.log(
+                    "train/sacf_noise_loss",
+                    self.train_loss_sacf_noise,
+                    on_step=False,
+                    on_epoch=True,
+                    prog_bar=False,
+                )
+
+            sacf_res_scale = sacf_aux.get("res_scale", None)
+            if sacf_res_scale is not None:
+                self.log(
+                    "train/sacf_res_scale",
+                    sacf_res_scale.float(),
+                    on_step=False,
+                    on_epoch=True,
+                    prog_bar=False,
+                )
 
         freq_info = aux.get("freq_info", {}) if isinstance(aux, dict) else {}
         freq_gamma = freq_info.get("freq_gamma", None)

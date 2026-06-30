@@ -1,0 +1,23 @@
+# @package _global_
+
+# Joint Event + RGB training with SACF only (no SCFM). Visual-only.
+tags: ["nyc", "joint", "sacf_only", "visual_only"]
+
+model:
+  use_text: false
+  lambda_contrast: 0.15
+  net:
+    mods:
+      sacf:
+        enabled: true
+        variant: original
+        layer_idx: 6
+      scfm:
+        enabled: false
+
+data:
+  use_text: false
+
+logger:
+  csv:
+    name: "nyc_vpr_sac_only_joint"

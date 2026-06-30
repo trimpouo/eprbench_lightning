@@ -231,9 +231,9 @@ class EventVPRDataset(Dataset):
                 text_desc = self.text_descriptions[place_id]
                 # Return the same text description for each image
                 text_descs = [text_desc] * len(selected_img_paths)
-                return torch.stack(imgs), torch.tensor(place_id).repeat(len(selected_img_paths)), text_descs
             else:
-                return torch.stack(imgs), torch.tensor(place_id).repeat(len(selected_img_paths))
+                text_descs = [""] * len(selected_img_paths)
+            return torch.stack(imgs), torch.tensor(place_id).repeat(len(selected_img_paths)), text_descs
         else: # val or test
             img_path = self.all_images_paths[idx]
             img = Image.open(img_path).convert('RGB')
@@ -242,9 +242,9 @@ class EventVPRDataset(Dataset):
             
             if self.use_text and img_path in self.text_descriptions:
                 text_desc = self.text_descriptions[img_path]
-                return img, idx, text_desc
             else:
-                return img, idx
+                text_desc = ""
+            return img, idx, text_desc
 
     def __len__(self):
         if self.split == "train":

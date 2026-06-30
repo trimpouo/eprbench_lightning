@@ -128,10 +128,10 @@ class EPRBenchLitModule(LightningModule):
 
         self.val_r1_best = MaxMetric()
 
-        self._val_features: List[torch.Tensor] = []
-        self._val_indices: List[torch.Tensor] = []
-        self._test_features: List[torch.Tensor] = []
-        self._test_indices: List[torch.Tensor] = []
+        self._val_features: Dict[int, List[torch.Tensor]] = {}
+        self._val_indices: Dict[int, List[torch.Tensor]] = {}
+        self._test_features: Dict[int, List[torch.Tensor]] = {}
+        self._test_indices: Dict[int, List[torch.Tensor]] = {}
 
     def forward(
         self,
@@ -404,14 +404,20 @@ class EPRBenchLitModule(LightningModule):
 
     def on_validation_epoch_start(self) -> None:
         """Lightning hook called at the start of validation epoch."""
-        self._val_features.clear()
-        self._val_indices.clear()
+        self._val_features = {}
+        self._val_indices = {}
 
-    def validation_step(self, batch: Tuple[torch.Tensor, ...], batch_idx: int) -> None:
+    def validation_step(
+        self,
+        batch: Tuple[torch.Tensor, ...],
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
         """Perform a single validation step on a batch of data.
 
         :param batch: A batch of data containing images, indices, and optional text.
         :param batch_idx: The index of the current batch.
+        :param dataloader_idx: Index of the dataloader when multiple are used.
         """
         inputs, indices, text_desc = batch
 
@@ -429,8 +435,70 @@ class EPRBenchLitModule(LightningModule):
             features = self.forward(inputs)
 
         features = features.cpu()
-        self._val_features.append(features)
-        self._val_indices.append(indices.cpu())
+        self._val_features.setdefault(dataloader_idx, []).append(features)
+        self._val_indices.setdefault(dataloader_idx, []).append(indices.cpu())
+
+    def _get_eval_dataset(self, stage: str, dataloader_idx: int):
+        """Return the evaluation dataset for a given stage and dataloader index."""
+        dm = self.trainer.datamodule
+        suffix = ["event", "rgb"][dataloader_idx]
+        attr_prefix = "data_val" if stage == "val" else "data_test"
+        attr = f"{attr_prefix}_{suffix}"
+        if hasattr(dm, attr):
+            return getattr(dm, attr)
+        # Fallback to legacy single-dataloader datamodules
+        return getattr(dm, f"{attr_prefix}")
+
+    def _compute_recalls(
+        self,
+        features_dict: Dict[int, List[torch.Tensor]],
+        indices_dict: Dict[int, List[torch.Tensor]],
+        stage: str,
+    ) -> Dict[int, np.ndarray]:
+        """Compute per-dataloader recalls using FAISS search.
+
+        :param features_dict: Mapping from dataloader index to feature tensors.
+        :param indices_dict: Mapping from dataloader index to index tensors.
+        :param stage: Either ``"val"`` or ``"test"``.
+        :return: Mapping from dataloader index to recall array.
+        """
+        results = {}
+        for dataloader_idx, feat_list in features_dict.items():
+            if len(feat_list) == 0:
+                continue
+            all_features = torch.cat(feat_list, dim=0).numpy()
+            all_indices = torch.cat(indices_dict[dataloader_idx], dim=0).numpy()
+
+            eval_ds = self._get_eval_dataset(stage, dataloader_idx)
+            database_num = eval_ds.database_num
+            queries_num = eval_ds.queries_num
+
+            sorted_features = np.empty(
+                (len(eval_ds), self.hparams.features_dim), dtype=np.float32
+            )
+            sorted_features[all_indices] = all_features
+
+            database_features = sorted_features[:database_num]
+            queries_features = sorted_features[database_num:]
+
+            faiss_index = faiss.IndexFlatL2(self.hparams.features_dim)
+            faiss_index.add(database_features)
+
+            _, predictions = faiss_index.search(
+                queries_features, max(self.hparams.recall_values)
+            )
+
+            positives_per_query = eval_ds.get_positives()
+            recalls = np.zeros(len(self.hparams.recall_values))
+            for query_index, pred in enumerate(predictions):
+                for i, n in enumerate(self.hparams.recall_values):
+                    if np.any(np.in1d(pred[:n], positives_per_query[query_index])):
+                        recalls[i:] += 1
+                        break
+
+            recalls = recalls / queries_num * 100
+            results[dataloader_idx] = recalls
+        return results
 
     def on_validation_epoch_end(self) -> None:
         """Lightning hook called at the end of validation epoch.
@@ -440,42 +508,26 @@ class EPRBenchLitModule(LightningModule):
         if len(self._val_features) == 0:
             return
 
-        all_features = torch.cat(self._val_features, dim=0).numpy()
-        all_indices = torch.cat(self._val_indices, dim=0).numpy()
-
-        eval_ds = self.trainer.datamodule.data_val
-        database_num = eval_ds.database_num
-        queries_num = eval_ds.queries_num
-
-        sorted_features = np.empty(
-            (len(eval_ds), self.hparams.features_dim), dtype=np.float32
-        )
-        sorted_features[all_indices] = all_features
-
-        database_features = sorted_features[:database_num]
-        queries_features = sorted_features[database_num:]
-
-        faiss_index = faiss.IndexFlatL2(self.hparams.features_dim)
-        faiss_index.add(database_features)
-
-        _, predictions = faiss_index.search(
-            queries_features, max(self.hparams.recall_values)
+        results = self._compute_recalls(
+            self._val_features, self._val_indices, stage="val"
         )
 
-        positives_per_query = eval_ds.get_positives()
-        recalls = np.zeros(len(self.hparams.recall_values))
-        for query_index, pred in enumerate(predictions):
-            for i, n in enumerate(self.hparams.recall_values):
-                if np.any(np.in1d(pred[:n], positives_per_query[query_index])):
-                    recalls[i:] += 1
-                    break
+        # Determine metric prefix based on number of dataloaders.
+        # The first dataloader keeps the legacy ``val/R@*`` names so that
+        # callbacks (ModelCheckpoint, EarlyStopping) still work; additional
+        # dataloaders use modality-specific names.
+        multi = len(results) > 1
+        for dataloader_idx, recalls in results.items():
+            if dataloader_idx == 0:
+                prefix = "val"
+            else:
+                prefix = f"val_{['event', 'rgb'][dataloader_idx]}"
+            for val, rec in zip(self.hparams.recall_values, recalls):
+                prog = (val == 1) and (dataloader_idx == 0)
+                self.log(f"{prefix}/R@{val}", float(rec), on_epoch=True, prog_bar=prog)
 
-        recalls = recalls / queries_num * 100
-
-        for val, rec in zip(self.hparams.recall_values, recalls):
-            self.log(f"val/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
-
-        r1 = float(recalls[0]) if len(recalls) > 0 else 0.0
+        # Use Event (idx 0) R@1 for best metric / checkpointing
+        r1 = float(results.get(0, np.zeros(1))[0]) if len(results) > 0 else 0.0
         self.val_r1_best(r1)
         self.log(
             "val/R@1_best", self.val_r1_best.compute(), on_epoch=True, prog_bar=True
@@ -483,14 +535,20 @@ class EPRBenchLitModule(LightningModule):
 
     def on_test_epoch_start(self) -> None:
         """Lightning hook called at the start of test epoch."""
-        self._test_features.clear()
-        self._test_indices.clear()
+        self._test_features = {}
+        self._test_indices = {}
 
-    def test_step(self, batch: Tuple[torch.Tensor, ...], batch_idx: int) -> None:
+    def test_step(
+        self,
+        batch: Tuple[torch.Tensor, ...],
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
         """Perform a single test step on a batch of data.
 
         :param batch: A batch of data containing images, indices, and optional text.
         :param batch_idx: The index of the current batch.
+        :param dataloader_idx: Index of the dataloader when multiple are used.
         """
         inputs, indices, text_desc = batch
 
@@ -508,8 +566,8 @@ class EPRBenchLitModule(LightningModule):
             features = self.forward(inputs)
 
         features = features.cpu()
-        self._test_features.append(features)
-        self._test_indices.append(indices.cpu())
+        self._test_features.setdefault(dataloader_idx, []).append(features)
+        self._test_indices.setdefault(dataloader_idx, []).append(indices.cpu())
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook called at the end of test epoch.
@@ -519,48 +577,31 @@ class EPRBenchLitModule(LightningModule):
         if len(self._test_features) == 0:
             return
 
-        all_features = torch.cat(self._test_features, dim=0).numpy()
-        all_indices = torch.cat(self._test_indices, dim=0).numpy()
-
-        eval_ds = self.trainer.datamodule.data_test
-        database_num = eval_ds.database_num
-        queries_num = eval_ds.queries_num
-
-        sorted_features = np.empty(
-            (len(eval_ds), self.hparams.features_dim), dtype=np.float32
-        )
-        sorted_features[all_indices] = all_features
-
-        database_features = sorted_features[:database_num]
-        queries_features = sorted_features[database_num:]
-
-        faiss_index = faiss.IndexFlatL2(self.hparams.features_dim)
-        faiss_index.add(database_features)
-
-        _, predictions = faiss_index.search(
-            queries_features, max(self.hparams.recall_values)
+        results = self._compute_recalls(
+            self._test_features, self._test_indices, stage="test"
         )
 
-        positives_per_query = eval_ds.get_positives()
-        recalls = np.zeros(len(self.hparams.recall_values))
-        for query_index, pred in enumerate(predictions):
-            for i, n in enumerate(self.hparams.recall_values):
-                if np.any(np.in1d(pred[:n], positives_per_query[query_index])):
-                    recalls[i:] += 1
-                    break
+        multi = len(results) > 1
+        all_recalls_str = []
+        for dataloader_idx, recalls in results.items():
+            if dataloader_idx == 0:
+                prefix = "test"
+            else:
+                prefix = f"test_{['event', 'rgb'][dataloader_idx]}"
+            for val, rec in zip(self.hparams.recall_values, recalls):
+                prog = (val == 1) and (dataloader_idx == 0)
+                self.log(f"{prefix}/R@{val}", float(rec), on_epoch=True, prog_bar=prog)
 
-        recalls = recalls / queries_num * 100
+            recalls_str = ", ".join(
+                [
+                    f"R@{val}: {rec:.1f}"
+                    for val, rec in zip(self.hparams.recall_values, recalls)
+                ]
+            )
+            label = ["event", "rgb"][dataloader_idx] if multi else "test"
+            all_recalls_str.append(f"{label}: {recalls_str}")
 
-        for val, rec in zip(self.hparams.recall_values, recalls):
-            self.log(f"test/R@{val}", float(rec), on_epoch=True, prog_bar=(val == 1))
-
-        recalls_str = ", ".join(
-            [
-                f"R@{val}: {rec:.1f}"
-                for val, rec in zip(self.hparams.recall_values, recalls)
-            ]
-        )
-        print(f"Test recalls: {recalls_str}")
+        print("Test recalls: " + " | ".join(all_recalls_str))
 
     def setup(self, stage: Optional[str] = None) -> None:
         """Lightning hook called at the beginning of fit, validate, test, or predict.

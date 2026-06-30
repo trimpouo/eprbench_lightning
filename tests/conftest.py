@@ -1,5 +1,6 @@
 """This file prepares config fixtures for other tests."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,13 @@ import rootutils
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
 from omegaconf import DictConfig, open_dict
+
+# Force offline mode for HuggingFace Hub to avoid network/connection failures
+# when running tests in environments with broken proxies. The CLIP weights are
+# expected to be available in the local cache.
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ.pop("http_proxy", None)
+os.environ.pop("https_proxy", None)
 
 
 @pytest.fixture(scope="package")

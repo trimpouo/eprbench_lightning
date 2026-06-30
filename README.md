@@ -23,23 +23,51 @@ To support semantic-aware and language-integrated VPR research, we provide LLM-g
 
 ---
 
-## Getting Started
+## Recent Updates
 
-### Prerequisites
+- **EventVPR SACF-only ablation**: 30-epoch training with text reaches **R@1 = 94.2%**, outperforming the text baseline (93.6%).
+- **Cross-dataset testing**: EventVPR SACF-only transfers to NYC Event with **R@1 = 76.2%** (+2.9% over baseline transfer).
+- **NYC-Event-VPR support**: added Event/RGB single-modality and joint-modality DataModules, plus conversion scripts and experiment configs.
+- **Project cleanup**: removed template configs (MNIST/Optuna), stale caches, duplicate module files, and outdated docs; merged historical SACF notes into `docs/eventvpr_exploration_journey.md`.
 
-- Python 3.9+
-- PyTorch 2.0+
-- CUDA-capable GPU (tested with RTX 3090 24G)
-- Install dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
+See `AGENTS.md` for the full agent-facing quick-reference and `docs/` for detailed experiment notes.
 
-### Dataset Preparation
+---
 
-You can download the **EPRBench** dataset from **[Baidu Netdisk](https://pan.baidu.com/s/15DzGOliRku07opgHjE8FXw?pwd=y9ii)**.
+## Quick Start
 
-Organize the dataset as follows:
+以下步骤用于快速恢复可训练/可测试的工作状态。
+
+### 1. 环境配置
+
+```bash
+# 推荐 Python 3.10
+git clone <repo-url>
+cd eprbench_lightning
+
+# pip 安装
+pip install -r requirements.txt
+
+# 或 conda 安装
+conda env create -f environment.yaml
+conda activate myenv
+```
+
+### 2. 下载预训练权重
+
+```bash
+# DINOv2 ViT-B/14（必需）
+wget https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_pretrain.pth \
+  -O model/dinov2_vitb14_pretrain.pth
+
+# 官方 SGVPR 原始 state-dict（已随仓库提供为 model/SGVPR.pth，用于 notebook / visualize_server）
+```
+
+### 3. 下载 EventVPR 数据集
+
+EPRBench (EventVPR) 数据集可从 **[百度网盘](https://pan.baidu.com/s/15DzGOliRku07opgHjE8FXw?pwd=y9ii)** 下载。
+
+解压后按如下结构放置：
 
 ```
 data/EventVPR/
@@ -55,34 +83,87 @@ data/EventVPR/
 └── scene_descriptions/  # LLM-generated text descriptions (.txt files)
 ```
 
-### Pre-trained Models
+### 4.（可选）下载 NYC-Event-VPR 数据集
 
-Download the DINOv2 (ViT-B/14) pre-trained weights and place it under `model/`:
+NYC-Event-VPR 官方发布在：
+
+- Hugging Face: https://huggingface.co/datasets/ai4ce/NYC-Event-VPR
+- GitHub: https://github.com/ai4ce/NYC-Event-VPR
+
+下载 **NYC-Event-VPR_VG** 格式（兼容 Visual Geo-localization 框架）后，使用本仓库脚本转换为 EPRBench 风格：
 
 ```bash
-wget https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_pretrain.pth -O model/dinov2_vitb14_pretrain.pth
+python scripts/convert_nyc_vg_to_eprbench.py \
+  --src data/NYC-Event-VPR-VG \
+  --dst data/NYC-Event-VPR-converted \
+  --modalities Event RGB \
+  --threshold 25.0
 ```
 
-The official SGVPR checkpoint (`model/SGVPR_lightning.ckpt`) is also provided for direct evaluation.
+转换后的目录可直接用于 `data=nyc_vpr_event`、`data=nyc_vpr_rgb` 或 `data=nyc_vpr_joint`。
+
+### 5. 快速验证
+
+```bash
+# 训练 EventVPR baseline（单卡 GPU，30 epochs）
+python src/train.py data=eprbench model=eprbench trainer=gpu \
+  data.use_text=true model.use_text=true model.lambda_contrast=0.25 \
+  data.train_batch_size=18 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
+
+# 训练 EventVPR SACF-only（batch 需降至 12 避免 OOM）
+python src/train.py experiment=eprbench_sacf_only trainer=gpu \
+  data.train_batch_size=12 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
+
+# 评估训练好的 Lightning checkpoint
+python src/eval.py \
+  ckpt_path=logs/train/runs/<run>/checkpoints/epoch_029.ckpt \
+  data=eprbench model=eprbench trainer=gpu \
+  data.use_text=false model.use_text=false \
+  data.infer_batch_size=32 data.num_workers=2
+```
+
+> **提示**：
+> - 本机稳定设置为 `data.num_workers=2`，默认 `6` 可能卡死。
+> - SACF 模型评估时必须加 `model.net.mods.sacf.enabled=true`。
+> - `model/SGVPR.pth` 是官方原始权重，不是 Lightning checkpoint；Hydra 评估请使用训练生成的 `*.ckpt`。
 
 ---
 
 ## Training
 
+### EventVPR
+
 Train the SGVPR model on the EPRBench (EventVPR) dataset:
 
 ```bash
-# Using Hydra configs
-python src/train.py data=eprbench model=eprbench trainer=gpu
+# Baseline with text
+python src/train.py data=eprbench model=eprbench trainer=gpu \
+  data.use_text=true model.use_text=true model.lambda_contrast=0.25 \
+  data.train_batch_size=18 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
 
-# Or use the convenience script
-bash train.sh
+# SACF-only with text (use batch 12 to avoid OOM on 16 GiB GPUs)
+python src/train.py experiment=eprbench_sacf_only trainer=gpu \
+  data.train_batch_size=12 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
+```
+
+### NYC-Event-VPR Event + RGB Joint Training
+
+```bash
+python src/train.py \
+  data=nyc_vpr_joint model=eprbench trainer=gpu \
+  experiment=nyc_vpr_sacf_scfm_joint \
+  trainer.max_epochs=30 trainer.check_val_every_n_epoch=5
 ```
 
 Key hyperparameters (aligned with the original implementation):
 - `pretrained_foundation: true` — loads DINOv2 weights
 - `lambda_contrast: 0.15` — contrastive learning weight (γ in the paper)
 - `temperature: 0.07` — temperature for CLIP-style loss
+- `num_workers=2` is the stable setting on this machine; the default `6` can hang.
 
 > **Implementation note:** The token similarity matrix in `network.py` uses `-1e4` for masked fill instead of the original `-1e9`. This is an intentional compromise to avoid `inf` overflows when training with `precision=16-mixed`. If you need exact numerical alignment with the original fp32 training, switch to the fp32 trainer (`trainer=fp32`).
 
@@ -90,15 +171,40 @@ Key hyperparameters (aligned with the original implementation):
 
 ## Evaluation
 
-Evaluate a trained checkpoint on the test set:
+Evaluate a trained **Lightning** checkpoint on the test set:
 
 ```bash
-# Evaluate official checkpoint
-python src/eval.py ckpt_path=model/SGVPR_lightning.ckpt trainer=gpu
+# EventVPR test
+python src/eval.py \
+  ckpt_path=logs/train/runs/<run>/checkpoints/epoch_029.ckpt \
+  data=eprbench model=eprbench trainer=gpu \
+  data.use_text=false model.use_text=false \
+  data.infer_batch_size=32 data.num_workers=2
 
-# Or use the convenience script
+# Cross-dataset: EventVPR model on NYC Event test
+python src/eval.py \
+  ckpt_path=logs/train/runs/<run>/checkpoints/epoch_029.ckpt \
+  data=nyc_vpr_event model=eprbench trainer=gpu \
+  data.use_text=false model.use_text=false \
+  model.net.mods.sacf.enabled=true \
+  data.infer_batch_size=32 data.num_workers=2
+
+# Or use the convenience script (edit CKPT_PATH first)
 bash eval.sh
 ```
+
+> **Note:** If the checkpoint was trained with SACF, you must add `model.net.mods.sacf.enabled=true` at eval time, otherwise the architecture mismatch will produce wrong results.
+
+### Latest Results
+
+| Experiment | Test set | R@1 | R@5 | R@10 | R@100 |
+|---|---|:---:|:---:|:---:|:---:|
+| EventVPR baseline + text | EventVPR | 93.6 | 95.6 | 96.6 | 99.2 |
+| EventVPR SACF-only + text | EventVPR | 94.2 | 95.4 | 97.2 | 99.2 |
+| EventVPR baseline → NYC | NYC Event | 73.3 | 87.5 | 91.2 | 97.6 |
+| EventVPR SACF-only → NYC | NYC Event | 76.2 | 88.9 | 91.7 | 98.1 |
+| NYC SACF+SCFM joint | NYC Event | 92.8 | 97.7 | 98.5 | 99.7 |
+| NYC SACF+SCFM joint | NYC RGB | 99.2 | 99.8 | 99.9 | 99.9 |
 
 Expected test metrics (official weights):
 | R@1 | R@5 | R@10 | R@100 |
@@ -115,18 +221,46 @@ This project is based on the [Lightning-Hydra-Template](https://github.com/ashle
 .
 ├── configs/              # Hydra configuration files
 │   ├── data/             # Data module configs
+│   │   ├── eprbench.yaml
+│   │   ├── nyc_vpr_event.yaml
+│   │   ├── nyc_vpr_rgb.yaml
+│   │   └── nyc_vpr_joint.yaml
+│   ├── experiment/       # Experiment-specific overrides
+│   │   ├── eprbench_sacf_only.yaml
+│   │   ├── nyc_vpr_visual_only.yaml
+│   │   ├── nyc_vpr_sac_only_joint.yaml
+│   │   ├── nyc_vpr_scfm_only_joint.yaml
+│   │   └── nyc_vpr_sacf_scfm_joint.yaml
 │   ├── model/            # Model configs
 │   ├── trainer/          # Trainer configs
 │   └── callbacks/        # Callback configs
 ├── src/
 │   ├── data/             # Data modules & datasets
+│   │   ├── eprbench_datamodule.py
+│   │   ├── nyc_vpr_datamodule.py
+│   │   ├── nyc_vpr_joint_datamodule.py
+│   │   └── components/
+│   │       ├── eventvpr_dataset.py
+│   │       └── nyc_vpr_bench_dataset.py
 │   ├── models/           # Lightning modules & networks
+│   │   ├── eprbench_module.py
+│   │   └── components/
+│   │       ├── network.py
+│   │       └── mods/     # SACF, SCFM, etc.
 │   ├── utils/            # Utility functions
 │   ├── train.py          # Training entry point
-│   └── eval.py           # Evaluation entry point
+│   ├── eval.py           # Evaluation entry point
+│   └── visualize_server.py
+├── scripts/              # Utility & ablation scripts
 ├── model/                # Pre-trained checkpoints
+│   ├── dinov2_vitb14_pretrain.pth
+│   └── SGVPR.pth
 ├── data/                 # Dataset directory
-└── logs/                 # Training logs
+├── logs/                 # Training logs
+└── docs/                 # Experiment notes
+    ├── eventvpr_exploration_journey.md
+    ├── nyc_vpr_sacf_scfm_ablation.md
+    └── baseline_sacf_pipeline.md
 ```
 
 ---

@@ -1,0 +1,18 @@
+_target_: src.data.nyc_vpr_datamodule.NYCVPRDataModule
+
+converted_vg_root: ${paths.data_dir}/NYC-Event-VPR-converted
+vpr_bench_root: ${paths.data_dir}/NYC-Event-VPR
+modality: event
+
+train_batch_size: 16
+infer_batch_size: 32
+num_workers: 2
+pin_memory: true
+
+use_text: false
+text_folder: null
+
+img_per_place: 5
+min_img_per_place: 5
+
+resize: [224, 224]

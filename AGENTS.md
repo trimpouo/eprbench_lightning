@@ -27,6 +27,10 @@ The project is based on the [Lightning-Hydra-Template](https://github.com/ashlev
 .
 ├── configs/                  # Hydra configuration files (YAML)
 │   ├── data/                 # DataModule configs
+│   │   ├── eprbench.yaml
+│   │   ├── nyc_vpr_event.yaml
+│   │   ├── nyc_vpr_rgb.yaml
+│   │   └── nyc_vpr_joint.yaml
 │   ├── model/                # Model / LightningModule configs
 │   ├── trainer/              # Trainer configs (cpu, gpu, ddp, ...)
 │   ├── callbacks/            # Callback configs (checkpoint, early stopping, ...)
@@ -35,40 +39,61 @@ The project is based on the [Lightning-Hydra-Template](https://github.com/ashlev
 │   ├── hydra/                # Hydra runtime config (output dirs, logging)
 │   ├── extras/               # Extra utilities config
 │   ├── debug/                # Debugging presets
-│   ├── experiment/           # Experiment-specific overrides
-│   └── hparams_search/       # Hyperparameter search configs (Optuna)
+│   └── experiment/           # Experiment-specific overrides
+│       ├── eprbench_sacf_only.yaml
+│       ├── nyc_vpr_visual_only.yaml
+│       ├── nyc_vpr_sac_only_joint.yaml
+│       ├── nyc_vpr_scfm_only_joint.yaml
+│       └── nyc_vpr_sacf_scfm_joint.yaml
 ├── src/                      # Source code
 │   ├── data/
 │   │   ├── eprbench_datamodule.py       # LightningDataModule
+│   │   ├── nyc_vpr_datamodule.py        # NYC Event/RGB single-modality DataModule
+│   │   ├── nyc_vpr_joint_datamodule.py  # NYC Event + RGB joint DataModule
 │   │   └── components/
 │   │       ├── eventvpr_dataset.py      # EventVPRDataset
+│   │       ├── nyc_vpr_bench_dataset.py # NYC-VPR-Bench dataset
 │   │       └── datasets_ws.py           # Dataset helper
 │   ├── models/
 │   │   ├── eprbench_module.py           # LightningModule (train/val/test loop)
 │   │   └── components/
 │   │       ├── network.py               # SGVPRNet (backbone + fusion + aggregation)
 │   │       ├── loss.py                  # Loss function (MultiSimilarity + contrastive)
+│   │       ├── mods/                    # Optional enhancement modules (SACF, SCFM, ...)
 │   │       └── backbone/
 │   │           ├── text_encoder_clip.py # OpenCLIP text encoder
 │   │           ├── vision_transformer.py
 │   │           └── dinov2/              # DINOv2 blocks
 │   ├── utils/                # Utilities (logging, instantiators, rich helpers)
 │   ├── train.py              # Training entry point
-│   └── eval.py               # Evaluation entry point
+│   ├── eval.py               # Evaluation entry point
+│   └── visualize_server.py   # Visual inference server (uses model/SGVPR.pth)
 ├── tests/                    # pytest suite
 │   ├── conftest.py           # Hydra config fixtures
 │   ├── helpers/              # Test helpers (RunIf, package_available)
 │   ├── test_train.py
 │   ├── test_eval.py
 │   ├── test_datamodules.py
-│   ├── test_configs.py
-│   └── test_sweeps.py
+│   └── test_configs.py
 ├── model/                    # Pre-trained checkpoints
 │   ├── dinov2_vitb14_pretrain.pth
-│   └── SGVPR_lightning.ckpt
+│   └── SGVPR.pth             # official/original SGVPR weights (dict format)
 ├── data/                     # Dataset directory (gitignored content)
-│   └── EventVPR/
+│   ├── EventVPR/
+│   └── NYC-Event-VPR-converted/  # optional, for NYC experiments
 ├── logs/                     # Hydra output / training logs
+├── docs/                     # Experiment notes and method docs
+│   ├── eventvpr_exploration_journey.md
+│   ├── nyc_vpr_sacf_scfm_ablation.md
+│   └── baseline_sacf_pipeline.md
+├── scripts/                  # Utility scripts
+│   ├── convert_nyc_vg_to_eprbench.py
+│   ├── extract_nyc_results.py
+│   ├── ablation_scfm_sacf.sh
+│   ├── sacf_sweep.sh
+│   ├── schedule.sh
+│   ├── se_rsacf_ablation.sh
+│   └── eval_schedule_runs.sh
 ├── requirements.txt
 ├── environment.yaml          # Conda environment spec
 ├── pyproject.toml            # pytest and coverage settings
@@ -104,10 +129,10 @@ bash train.sh
 
 ### Evaluation
 ```bash
-# Evaluate a checkpoint
-python src/eval.py ckpt_path=model/SGVPR_lightning.ckpt data=eprbench model=eprbench trainer=gpu
+# Evaluate a Lightning training checkpoint (replace with your actual checkpoint path)
+python src/eval.py ckpt_path=logs/train/runs/.../checkpoints/last.ckpt data=eprbench model=eprbench trainer=gpu
 
-# Convenience script
+# Convenience script (expects you to set the checkpoint path inside)
 bash eval.sh
 ```
 
@@ -138,6 +163,85 @@ make format
 make clean       # Remove pycache, pytest cache, coverage, etc.
 make clean-logs  # Remove logs/**
 ```
+
+---
+
+## Current Progress & How to Resume
+
+This section records the latest working state so you can quickly return to it.
+
+### Datasets
+
+- **EventVPR** (`data/EventVPR/`) — primary benchmark; supports text branch.
+  - Download: [Baidu Netdisk](https://pan.baidu.com/s/15DzGOliRku07opgHjE8FXw?pwd=y9ii)
+- **NYC-Event-VPR** (`data/NYC-Event-VPR-converted/`) — optional; supports Event, RGB, and Event+RGB joint training.
+  - Download the `NYC-Event-VPR_VG` split from [Hugging Face](https://huggingface.co/datasets/ai4ce/NYC-Event-VPR) or [GitHub](https://github.com/ai4ce/NYC-Event-VPR), then run `scripts/convert_nyc_vg_to_eprbench.py`.
+
+### Reproduced Checkpoints
+
+EventVPR 30-epoch checkpoints were produced by the commands below. The latest run directories are under `logs/train/runs/`.
+
+| Experiment | Config | Key result |
+|---|---|---|
+| EventVPR baseline + text | `model=eprbench` + text | R@1/5/10/100 = 93.6/95.6/96.6/99.2 |
+| EventVPR SACF-only + text | `experiment=eprbench_sacf_only` | R@1/5/10/100 = 94.2/95.4/97.2/99.2 |
+| Cross-dataset EventVPR → NYC Event | `data=nyc_vpr_event` | baseline 73.3/87.5/91.2/97.6; SACF 76.2/88.9/91.7/98.1 |
+
+### One-line Training / Eval Recipes
+
+```bash
+# 1. EventVPR baseline with text (30 epochs, batch 18)
+python src/train.py data=eprbench model=eprbench trainer=gpu \
+  data.use_text=true model.use_text=true model.lambda_contrast=0.25 \
+  data.train_batch_size=18 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
+
+# 2. EventVPR SACF-only with text (30 epochs, batch 12 due to OOM)
+python src/train.py experiment=eprbench_sacf_only trainer=gpu \
+  data.train_batch_size=12 data.infer_batch_size=16 data.num_workers=2 \
+  trainer.max_epochs=30
+
+# 3. Evaluate a trained EventVPR checkpoint (enable SACF if the model was trained with it)
+python src/eval.py \
+  ckpt_path=logs/train/runs/<run>/checkpoints/epoch_029.ckpt \
+  data=eprbench model=eprbench trainer=gpu \
+  data.use_text=false model.use_text=false \
+  data.infer_batch_size=32 data.num_workers=2
+
+# 4. Cross-dataset eval: EventVPR → NYC Event
+python src/eval.py \
+  ckpt_path=logs/train/runs/<run>/checkpoints/epoch_029.ckpt \
+  data=nyc_vpr_event model=eprbench trainer=gpu \
+  data.use_text=false model.use_text=false \
+  model.net.mods.sacf.enabled=true \
+  data.infer_batch_size=32 data.num_workers=2
+
+# 5. NYC Event + RGB joint training with SACF+SCFM (visual-only)
+python src/train.py \
+  data=nyc_vpr_joint model=eprbench trainer=gpu \
+  experiment=nyc_vpr_sacf_scfm_joint \
+  trainer.max_epochs=30 trainer.check_val_every_n_epoch=5
+
+# 6. NYC joint ablations
+python src/train.py data=nyc_vpr_joint trainer=gpu \
+  experiment=nyc_vpr_sac_only_joint trainer.max_epochs=30
+python src/train.py data=nyc_vpr_joint trainer=gpu \
+  experiment=nyc_vpr_scfm_only_joint trainer.max_epochs=30
+```
+
+### Important Gotchas
+
+- **`num_workers=2`** is the stable setting on this machine; default `6` may hang.
+- **SACF checkpoints must be evaluated with SACF enabled**: add `model.net.mods.sacf.enabled=true` to the eval command.
+- **Text is disabled at cross-dataset eval**: set `data.use_text=false model.use_text=false`.
+- **`model/SGVPR.pth`** is the original official state-dict, not a Lightning checkpoint. Use it with `notebooks/visual_inference.ipynb` or `src/visualize_server.py`; for Hydra `src/eval.py` use a training checkpoint (`*.ckpt`).
+- **Logs are cleaned**: only `logs/.gitkeep` remains; previous 48 GB of Hydra outputs were removed.
+
+### Latest Experiment Docs
+
+- `docs/eventvpr_exploration_journey.md` — EventVPR SACF ablation & cross-dataset testing, plus historical SE-RSACF recipes.
+- `docs/nyc_vpr_sacf_scfm_ablation.md` — NYC Event+RGB joint training and SACF/SCFM ablation.
+- `docs/baseline_sacf_pipeline.md` — Baseline + SACF workflow explanation.
 
 ---
 
@@ -235,13 +339,15 @@ pytest --cov src
 - Validation and test use the same split (`test`) to mirror the original implementation.
 
 ### Training Notes
-- Optimizer: Adam (`lr=1e-4`, `weight_decay=1e-3`).
+- Optimizer: AdamW (`lr=1e-4`, `weight_decay=1e-3`).
 - Scheduler: StepLR (`gamma=0.5`, step size = 3 epochs in batches).
 - Key hyperparameters from official weights:
   - `pretrained_foundation: true`
-  - `lambda_contrast: 0.25`
+  - `lambda_contrast: 0.15`
   - `temperature: 0.07`
 - `torch.compile` can be enabled via config (`compile: true`) for speed.
+- On this machine, use `data.num_workers=2` for stable data loading (the default `6` can hang).
+- SACF-only training needs a smaller batch size than the baseline (e.g. `data.train_batch_size=12`) to avoid OOM on a 16 GiB GPU.
 
 ---
 
@@ -268,12 +374,16 @@ GitHub Actions workflows (`.github/workflows/`):
 | Task | Command |
 |------|---------|
 | Install deps | `pip install -r requirements.txt` |
-| Train | `python src/train.py data=eprbench model=eprbench trainer=gpu` |
-| Eval | `python src/eval.py ckpt_path=... data=eprbench model=eprbench trainer=gpu` |
+| Train EventVPR baseline | `python src/train.py data=eprbench model=eprbench trainer=gpu` |
+| Train EventVPR SACF-only | `python src/train.py experiment=eprbench_sacf_only trainer=gpu data.train_batch_size=12 data.num_workers=2` |
+| Eval a checkpoint | `python src/eval.py ckpt_path=... data=eprbench model=eprbench trainer=gpu` |
+| Cross-dataset eval | `python src/eval.py ckpt_path=... data=nyc_vpr_event model=eprbench trainer=gpu model.net.mods.sacf.enabled=true data.use_text=false model.use_text=false` |
+| Train NYC joint | `python src/train.py data=nyc_vpr_joint experiment=nyc_vpr_sacf_scfm_joint trainer=gpu` |
 | Fast tests | `pytest -k "not slow"` |
 | All tests | `pytest` |
 | Format / lint | `pre-commit run -a` |
 | Clean artifacts | `make clean` |
+| Clean logs | `make clean-logs` |
 
 When modifying code, always:
 1. Respect the **99-character line length** (Black).

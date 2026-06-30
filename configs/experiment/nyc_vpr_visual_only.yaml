@@ -1,0 +1,15 @@
+# @package _global_
+
+# NYC-Event-VPR visual-only training (no scene descriptions available)
+tags: ["nyc", "visual_only"]
+
+model:
+  use_text: false
+  lambda_contrast: 0.15
+
+data:
+  use_text: false
+
+logger:
+  csv:
+    name: "nyc_vpr"

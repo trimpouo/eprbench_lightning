@@ -1,0 +1,20 @@
+# @package _global_
+
+# EventVPR (EPRBench) training with SACF only and text branch enabled.
+tags: ["eprbench", "sacf_only"]
+
+model:
+  use_text: true
+  lambda_contrast: 0.15
+  net:
+    mods:
+      sacf:
+        enabled: true
+        variant: original
+        layer_idx: 6
+      scfm:
+        enabled: false
+
+logger:
+  csv:
+    name: "eprbench_sacf_only"

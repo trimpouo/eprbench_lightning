@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this research package, please cite the original EPRBench paper (see sources/bibliography.bib) and this repository."
+title: "EPRBench (Lightning + Hydra): SGVPR Reproduction and SACF Ablation Research Package"
+type: software
+version: 0.1.0
+date-released: "2026-08-06"
+repository-code: "."
+keywords:
+  - event-based vision
+  - visual place recognition
+  - DINOv2
+  - SACF
+  - reproducible research
+notes: >
+  本 CITATION.cff 描述的是 new-paper/ 研究包及其对应的代码仓库。
+  学术引用请优先引用原始论文 EPRBench (arXiv:2602.12919)，
+  完整条目见 new-paper/sources/bibliography.bib。

@@ -257,6 +257,7 @@ This project is based on the [Lightning-Hydra-Template](https://github.com/ashle
 │   └── SGVPR.pth
 ├── data/                 # Dataset directory
 ├── logs/                 # Training logs
+├── new-paper/            # "新型论文"研究包：claims / evidence / results.tsv / agent.md
 └── docs/                 # Experiment notes
     ├── eventvpr_exploration_journey.md
     ├── nyc_vpr_sacf_scfm_ablation.md

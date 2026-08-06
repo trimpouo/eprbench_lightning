@@ -1,0 +1,38 @@
+experiment	config_or_command	train_data	test_data	modality	text	R@1	R@5	R@10	R@100	status	source	description
+E01	cmd:baseline_text	EventVPR	EventVPR	Event	on	93.6	95.6	96.6	99.2	keep	docs/eventvpr_exploration_journey.md#实验一	Baseline + text, 30ep, batch 18, lambda_contrast=0.25
+E02	experiment=eprbench_sacf_only	EventVPR	EventVPR	Event	on	94.2	95.4	97.2	99.2	keep	docs/eventvpr_exploration_journey.md#实验二	SACF-only + text, 30ep, batch 12 (OOM 调整), lambda_contrast=0.15
+E03	eval:E01-ckpt	EventVPR	NYC-Event	Event	off	73.3	87.5	91.2	97.6	keep	docs/eventvpr_exploration_journey.md#实验三	跨数据集 baseline 迁移, 推理关文本
+E04	eval:E02-ckpt+sacf.enabled	EventVPR	NYC-Event	Event	off	76.2	88.9	91.7	98.1	keep	docs/eventvpr_exploration_journey.md#实验三	跨数据集 SACF 迁移, 评估须显式启用 SACF
+E05	experiment=nyc_vpr_sac_only_joint	NYC-Event+RGB	NYC-Event	Event	off	93.4	98.0	98.7	99.7	keep	docs/nyc_vpr_sacf_scfm_ablation.md#5	联合训练 SACF only, 28.1M 可训练参数
+E05r	experiment=nyc_vpr_sac_only_joint	NYC-Event+RGB	NYC-RGB	RGB	off	99.3	99.8	99.9	99.9	keep	docs/nyc_vpr_sacf_scfm_ablation.md#5	E05 的 RGB 测试侧
+E06	experiment=nyc_vpr_scfm_only_joint	NYC-Event+RGB	NYC-Event	Event	off	93.1	97.7	98.6	99.7	keep	docs/nyc_vpr_sacf_scfm_ablation.md#5	联合训练 SCFM only, 22.2M
+E06r	experiment=nyc_vpr_scfm_only_joint	NYC-Event+RGB	NYC-RGB	RGB	off	98.9	99.5	99.8	99.9	keep	docs/nyc_vpr_sacf_scfm_ablation.md#5	E06 的 RGB 测试侧
+E07	experiment=nyc_vpr_sacf_scfm_joint	NYC-Event+RGB	NYC-Event	Event	off	92.8	97.7	98.5	99.7	discard	docs/nyc_vpr_sacf_scfm_ablation.md#5	SACF+SCFM 组合, Event 上负向干扰 (见 N2)
+E07r	experiment=nyc_vpr_sacf_scfm_joint	NYC-Event+RGB	NYC-RGB	RGB	off	99.2	99.8	99.9	99.9	discard	docs/nyc_vpr_sacf_scfm_ablation.md#5	E07 的 RGB 测试侧
+E08	experiment=nyc_vpr_visual_only	NYC-Event	NYC-Event	Event	off	93.5	97.8	98.6	99.7	reference	docs/nyc_vpr_sacf_scfm_ablation.md#5	单模态 visual-only 参考基线
+E08r	experiment=nyc_vpr_visual_only	NYC-RGB	NYC-RGB	RGB	off	98.5	99.9	99.9	99.9	reference	docs/nyc_vpr_sacf_scfm_ablation.md#5	E08 的 RGB 参考基线
+H01	sacf.layer_idx=1	EventVPR	EventVPR	Event	off	94.56	96.02	97.39		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep, 当时 baseline R@1=94.33
+H02	sacf.layer_idx=2	EventVPR	EventVPR	Event	off	94.71	96.09	96.86		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep
+H03	sacf.layer_idx=3	EventVPR	EventVPR	Event	off	94.71	95.86	96.86		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep
+H04	sacf.layer_idx=4	EventVPR	EventVPR	Event	off	94.71	96.17	97.16		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep
+H05	sacf.layer_idx=5	EventVPR	EventVPR	Event	off	94.56	95.48	96.70		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep
+H06	sacf.layer_idx=6	EventVPR	EventVPR	Event	off	95.02	96.02	96.78		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep, sweet spot (+0.69)
+H07	sacf.layer_idx=7	EventVPR	EventVPR	Event	off	94.79	96.02	97.16		keep	docs/eventvpr_exploration_journey.md#A.2	历史 sweep
+H08	sersacf-sem-evt	EventVPR	EventVPR	Event	off	94.64	96.32	97.01	99.08	keep	docs/eventvpr_exploration_journey.md#A.4	SE-RSACF 双 prior 全开
+H09	sersacf-layers468-mix	EventVPR	EventVPR	Event	off	94.79	95.63	96.78	99.16	keep	docs/eventvpr_exploration_journey.md#A.4	多层混合 + learnable weight, 历史最高
+H10	sersacf-full	EventVPR	EventVPR	Event	off	94.33				discard	docs/eventvpr_exploration_journey.md#A.4	trick 堆叠反而下降 (见 N8)
+M01	cmd:all_mods_off+AdamW	EventVPR	EventVPR	Event	on	94.18	96.32	97.01	99.16	keep	experiments/mlflow_runs.tsv#c3c51a72	MLflow exp1 AdamW 批次 baseline; 另有 3 次重复 93.49/94.25/94.33, 用于噪声估计 (std 0.36)
+M02	model.net.mods.sacf.enabled=True layer_idx=6	EventVPR	EventVPR	Event	on	95.10	96.25	97.32	99.08	keep	experiments/mlflow_runs.tsv#b6857624	sacfW (AdamW): SACF 增益 +0.77 超噪声带, 支撑 C1/C5
+M03	model.net.mods.scfm.enabled=True	EventVPR	EventVPR	Event	on	94.33	95.79	96.78	99.00	keep	experiments/mlflow_runs.tsv#b2b868fa	scfmW (AdamW): SCFM 单独无增益
+M04	sacf+scfm 双开	EventVPR	EventVPR	Event	on	95.10	96.09	97.16	99.16	keep	experiments/mlflow_runs.tsv#55606c31	sacf-scfmW: 增益全来自 SACF; EventVPR 上 SCFM 为中性冗余 (补充 C3 边界)
+M05	EATS+ES-SACF	EventVPR	EventVPR	Event	on	94.79	95.79	96.78	99.31	keep	experiments/mlflow_runs.tsv#c53f7ff1	eats-essacf: 两模块精选组合, 噪声带上沿的弱正向信号
+M06	EATS+SACF+SCFM(original)	EventVPR	EventVPR	Event	on	94.64	95.63	97.24	99.16	keep	experiments/mlflow_runs.tsv#dcdf4a49	eats-orig-sacfm: R@10 全网格最高
+M07	EATS+ES-SACF+ER-SCFM	EventVPR	EventVPR	Event	on	94.41	95.79	96.70	99.16	reference	experiments/mlflow_runs.tsv#46ecd36d	全组合不如精选两模块, 同向印证 N8
+M08	core+temporal_consistency	EventVPR	EventVPR	Event	on	94.18	95.94	96.93	99.16	discard	experiments/mlflow_runs.tsv#289f768a	temporal consistency 无增益 (94.18 <= 94.41 参照)
+M09	core+text/word dropout	EventVPR	EventVPR	Event	on	94.48	95.94	96.78	99.39	keep	experiments/mlflow_runs.tsv#3c2a4470	core-textdrop: R@100 = 99.39 全库最高; R@1 增益在噪声内
+M10	core+temporal+textdrop	EventVPR	EventVPR	Event	on	94.71	95.86	96.78	99.08	keep	experiments/mlflow_runs.tsv#d1607991	组合 94.71, 噪声带上沿弱信号
+M11	sersacf-evt-only	EventVPR	EventVPR	Event	on	94.48	95.86	96.86	99.31	keep	experiments/mlflow_runs.tsv#3fa9efa9	SE-RSACF 仅事件 prior; 弱于双 prior (H08)
+M12	sersacf-adaptive-topk	EventVPR	EventVPR	Event	on	94.33	96.17	97.32	99.23	reference	experiments/mlflow_runs.tsv#b87f2279	自适应文本 topk 无额外增益
+M13	essacf-only (无 EATS)	EventVPR	EventVPR	Event	on	93.56	95.33	96.70	99.16	discard	experiments/mlflow_runs.tsv#0bea4c1d	ES 门控脱离 EATS 单开反而低于基线, 直接证据 N5
+M14	spm (10ep 筛选, batch 4)	EventVPR	EventVPR	Event	on	92.87	95.48	97.01	98.93	discard	experiments/mlflow_runs.tsv#eb4c3574	10-epoch 筛选最低; 且 batch 12/6 均启动即 OOM 失败, 双重负面
+M15	lgfp (10ep 筛选, batch 12)	EventVPR	EventVPR	Event	on	94.41	96.09	97.09	99.16	reference	experiments/mlflow_runs.tsv#9beb05af	频域类模块中筛选最优, 值得 50-epoch 复验; 注意 10ep 协议不可与 50ep 行直接比较

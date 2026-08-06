@@ -101,6 +101,8 @@ The project is based on the [Lightning-Hydra-Template](https://github.com/ashlev
 ├── Makefile                  # Convenience commands
 ├── train.sh                  # Quick training script
 ├── eval.sh                   # Quick evaluation script
+├── new-paper/                # "新型论文"研究包：paper.md / claims.yaml / agent.md / evidence/ / experiments/results.tsv
+│   └── README.md             # 理念与维护规则（机器可读、可执行、可追踪、可更新、可继续研究）
 └── .pre-commit-config.yaml   # Pre-commit hooks
 ```
 

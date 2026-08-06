@@ -1,0 +1,71 @@
+# 核心主张清单（机器可读）
+# 同步维护规则：paper.md 中的 Claims 一节与本文件必须一一对应；
+# 每个主张的 evidence 必须能在 experiments/results.tsv 中找到对应行。
+claims:
+  - id: C1
+    statement: >
+      SACF 在 EventVPR 同数据集上独立有效：SACF-only + text 的 R@1（94.2）
+      优于有文本基线（93.6），R@10 同步提升（97.2 vs 96.6）。
+    supported_by: [E01, E02, M01, M02]
+    counter_evidence: []
+    scope: "EventVPR test split；单卡 RTX A4000；30/50 epochs；单种子"
+    boundary:
+      - "增益约 0.6–0.8 个百分点；baseline 4 次独立重复 std ≈ 0.36（MLflow 复核），SACF 增益超出噪声带但未做显著性检验"
+      - "batch size 因 OOM 从 18 降至 12，与基线不完全同配置"
+    confidence: medium-high
+    last_verified: "2026-08-06"
+
+  - id: C2
+    statement: >
+      SACF 提升跨数据集泛化：EventVPR 训练的模型迁移到 NYC Event 时，
+      SACF-only 的 R@1（76.2）比 baseline（73.3）高 2.9 个百分点，
+      R@5/10/100 全面领先。
+    supported_by: [E03, E04]
+    counter_evidence: []
+    scope: "EventVPR → NYC Event 单向迁移；推理关闭文本分支"
+    boundary:
+      - "仅验证单向、单对数据集迁移"
+      - "跨域 R@1 绝对值下降约 20%，域 gap 仍然显著"
+    confidence: medium-high
+    last_verified: "2026-06-28"
+
+  - id: C3
+    statement: >
+      SCFM 与 SACF 叠加产生负向干扰：NYC Event+RGB 联合训练中，
+      SACF only（Event test R@1 = 93.4）优于 SACF+SCFM（92.8）与
+      SCFM only（93.1）。
+    supported_by: [E05, E06, E07]
+    counter_evidence: []
+    scope: "NYC-Event-VPR Event+RGB 联合训练；visual-only；30 epochs"
+    boundary:
+      - "NYC 训练规模有限（约 1800 places），可能为数据量导致的过拟合"
+      - "RGB 模态上差异很小（99.3 vs 99.2），负向干扰主要体现在 Event 模态"
+      - "更大规模数据上是否仍冲突未验证"
+      - "MLflow 复核：EventVPR 上 SACF+SCFM 与 SACF only 持平（95.10 vs 95.10，M02/M04），负向干扰为 NYC 小数据特有"
+    confidence: medium
+    last_verified: "2026-08-06"
+
+  - id: C4
+    statement: >
+      文本分支在跨数据集推理时可安全关闭：EventVPR 有文本训练的模型
+      在 NYC Event 上关闭文本分支后仍保持竞争力，视觉分支已学到足够表征。
+    supported_by: [E03, E04]
+    counter_evidence: []
+    scope: "EventVPR → NYC Event 迁移推理"
+    boundary:
+      - "间接证据：未做开/关文本的系统对照实验"
+      - "未量化文本分支本身的独立增益"
+    confidence: low-medium
+    last_verified: "2026-06-28"
+
+  - id: C5
+    statement: >
+      SACF 插入层存在 sweet spot：layer_idx=6 时增益最大（历史 sweep 中
+      R@1 +0.69），block 6 兼顾空间分辨率与高层语义。
+    supported_by: [H01, H02, H03, H04, H05, H06, H07, M02]
+    counter_evidence: []
+    scope: "EventVPR sweep；baseline R@1 = 94.18–94.33（AdamW 批次）"
+    boundary:
+      - "各层增益差距不大（0.23–0.77），sweet spot 结论对噪声敏感；但 layer 6 有 sacf6W/sacfW 双重复现（95.02/95.10）"
+    confidence: medium-high
+    last_verified: "2026-08-06"

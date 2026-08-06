@@ -1,0 +1,117 @@
+run_id	mlflow_experiment	run_name	date	git	status	config	epochs_run	duration_h	val_R1_best	test_R1	test_R5	test_R10	test_R100	train_loss_final
+9de958af	eprbench	baseline	2026-06-03 10:03	cd24be0	FINISHED	none,Adam,bs24,maxep1	1	0.06	92.11	92.11	94.94	96.40	99.31	2.1049
+39a5e67f	eprbench	sacf-scfm	2026-06-03 10:09	cd24be0	FINISHED	sacf+scfm,layer6,Adam,bs18,maxep3	3	0.14	93.87	93.87	95.33	96.55	99.08	1.6132
+da556229	eprbench	baseline	2026-06-03 10:19	cd24be0	FINISHED	none,Adam,bs18,maxep50	27	0.87	93.49	93.49	95.48	96.78	99.16	1.5161
+4064a840	eprbench	sacf	2026-06-03 11:11	cd24be0	FINISHED	sacf,layer6,Adam,bs18,maxep50	37	1.32	94.71	94.71	96.48	97.47	99.16	1.4234
+aeb89b32	eprbench	scfm	2026-06-03 12:31	cd24be0	FINISHED	scfm,Adam,bs18,maxep50	34	1.10	94.41	94.41	95.71	96.78	98.93	1.5347
+9f63da5c	eprbench	sacf-scfm	2026-06-03 13:37	cd24be0	FINISHED	sacf+scfm,layer6,Adam,bs18,maxep50	30	1.12	94.41	94.41	95.79	96.70	99.00	1.4052
+d41f627f	eprbench	baseline	2026-06-03 16:51	cd24be0	FAILED	none,Adam,bs18,maxep50	1	0.09	92.72					1.7850
+2f52db6c	eprbench	baseline	2026-06-03 16:57	cd24be0	FINISHED	none,Adam,bs18,maxep50	26	0.82	94.25	94.25	95.40	96.55	99.16	1.5317
+00a107be	eprbench	eats-only	2026-06-03 17:47	cd24be0	FINISHED	event_aware_token_selector+event_cues,Adam,bs18,maxep50	50	1.60	94.10	94.10	95.48	96.78	99.23	1.5529
+606283aa	eprbench	essacf-only	2026-06-03 19:24	cd24be0	FINISHED	sacf,layer6,Adam,bs18,maxep50	34	1.22	93.79	93.79	95.56	96.86	98.93	1.5444
+d87d4039	eprbench	erscfm-only	2026-06-03 20:38	cd24be0	FINISHED	scfm,Adam,bs18,maxep50	32	1.02	93.87	93.87	95.25	96.32	99.00	1.5413
+41eb8895	eprbench	eats-essacf	2026-06-03 21:39	cd24be0	FINISHED	event_aware_token_selector+sacf+event_cues,layer6,Adam,bs18,maxep50	30	1.11	94.10	94.10	95.56	96.55	99.08	1.5521
+14c0d3c1	eprbench	eats-erscfm	2026-06-03 22:46	cd24be0	FINISHED	event_aware_token_selector+scfm+event_cues,Adam,bs18,maxep50	27	0.89	94.18	94.18	95.71	96.40	98.70	1.5251
+8c57a794	eprbench	essacf-erscfm	2026-06-03 23:40	cd24be0	FINISHED	sacf+scfm,layer6,Adam,bs18,maxep50	30	1.10	94.64	94.64	96.02	96.86	99.00	1.5572
+8b1c4cf9	eprbench	eats-essacf-erscfm	2026-06-04 00:47	cd24be0	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,Adam,bs18,maxep50	40	1.51	94.25	94.25	96.02	97.09	99.16	1.5146
+d6ff82e7	eprbench	core-temporal	2026-06-04 02:18	cd24be0	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,temporal,Adam,bs18,maxep50	22	0.83	93.79	93.79	95.63	96.55	99.00	1.4899
+99a54e80	eprbench	core-textdrop	2026-06-04 03:08	cd24be0	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,textdrop0.15,Adam,bs18,maxep50	50	1.84	93.41	93.41	95.63	96.55	99.00	1.5337
+c9c31b7f	eprbench	core-temporal-textdrop	2026-06-04 04:59	cd24be0	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,temporal,textdrop0.15,Adam,bs18,maxep50	50	1.85	93.72	93.72	95.86	96.70	99.00	1.4999
+a0616b7c	eprbench	orig-sacfm	2026-06-04 06:50	cd24be0	FINISHED	sacf+scfm,layer6,Adam,bs18,maxep50	30	1.10	94.79	94.79	95.79	96.86	99.00	1.4396
+c91899c0	eprbench	eats-orig-sacfm	2026-06-04 07:56	cd24be0	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,Adam,bs18,maxep50	36	1.33	94.18	94.18	95.86	96.86	99.08	1.4074
+6b3c1838	eprbench	baselineW	2026-06-04 11:04	9a5e488	FINISHED	none,AdamW,bs18,maxep50	41	1.28	94.33	94.33	96.02	96.70	99.08	1.4982
+b6857624	eprbench	sacfW	2026-06-04 12:21	9a5e488	FINISHED	sacf,layer6,AdamW,bs18,maxep50	37	1.32	95.10	95.10	96.25	97.32	99.08	1.3397
+b2b868fa	eprbench	scfmW	2026-06-04 13:40	9a5e488	FINISHED	scfm,AdamW,bs18,maxep50	27	0.87	94.33	94.33	95.79	96.78	99.00	1.4372
+55606c31	eprbench	sacf-scfmW	2026-06-04 14:33	9a5e488	FINISHED	sacf+scfm,layer6,AdamW,bs18,maxep50	39	1.41	95.10	95.10	96.09	97.16	99.16	1.3688
+c3c51a72	eprbench	baseline	2026-06-04 19:19	a111acb	FINISHED	none,AdamW,bs18,maxep50	32	1.05	94.18	94.18	96.32	97.01	99.16	1.5149
+9274b919	eprbench	eats-only	2026-06-04 20:23	a111acb	FINISHED	event_aware_token_selector+event_cues,AdamW,bs18,maxep50	30	1.02	94.33	94.33	95.63	97.01	99.16	1.5070
+0bea4c1d	eprbench	essacf-only	2026-06-04 21:24	a111acb	FINISHED	sacf,layer6,AdamW,bs18,maxep50	28	1.04	93.56	93.56	95.33	96.70	99.16	1.4614
+60df1bc5	eprbench	erscfm-only	2026-06-04 22:26	a111acb	FINISHED	scfm,AdamW,bs18,maxep50	27	0.90	93.95	93.95	95.56	96.40	99.08	1.4741
+c53f7ff1	eprbench	eats-essacf	2026-06-04 23:21	a111acb	FINISHED	event_aware_token_selector+sacf+event_cues,layer6,AdamW,bs18,maxep50	36	1.37	94.79	94.79	95.79	96.78	99.31	1.5216
+f5f24b61	eprbench	eats-erscfm	2026-06-05 00:44	a111acb	FINISHED	event_aware_token_selector+scfm+event_cues,AdamW,bs18,maxep50	49	1.65	93.79	93.79	95.33	96.70	99.16	1.5090
+e3893fd4	eprbench	essacf-erscfm	2026-06-05 02:23	a111acb	FINISHED	sacf+scfm,layer6,AdamW,bs18,maxep50	32	1.20	94.25	94.25	95.71	96.70	99.08	1.4751
+46ecd36d	eprbench	eats-essacf-erscfm	2026-06-05 03:35	a111acb	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,AdamW,bs18,maxep50	43	1.63	94.41	94.41	95.79	96.70	99.16	1.5036
+289f768a	eprbench	core-temporal	2026-06-05 05:13	a111acb	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,temporal,AdamW,bs18,maxep50	29	1.13	94.18	94.18	95.94	96.93	99.16	1.4452
+3c2a4470	eprbench	core-textdrop	2026-06-05 06:22	a111acb	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,textdrop0.15,AdamW,bs18,maxep50	32	1.23	94.48	94.48	95.94	96.78	99.39	1.4779
+d1607991	eprbench	core-temporal-textdrop	2026-06-05 07:36	a111acb	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,temporal,textdrop0.15,AdamW,bs18,maxep50	34	1.32	94.71	94.71	95.86	96.78	99.08	1.4569
+815f1aca	eprbench	orig-sacfm	2026-06-05 08:56	a111acb	FINISHED	sacf+scfm,layer6,AdamW,bs18,maxep50	28	1.04	94.33	94.33	95.71	96.86	99.23	1.3540
+dcdf4a49	eprbench	eats-orig-sacfm	2026-06-05 09:59	a111acb	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,AdamW,bs18,maxep50	27	1.04	94.64	94.64	95.63	97.24	99.16	1.3941
+008410a2	eprbench	sacf1W	2026-06-05 23:41	a111acb	FINISHED	sacf,layer1,AdamW,bs18,maxep50	30	1.24	94.56	94.56	96.02	97.39	99.00	1.3812
+0988044a	eprbench	sacf2W	2026-06-06 00:56	a111acb	FINISHED	sacf,layer2,AdamW,bs18,maxep50	38	1.43	94.71	94.71	96.09	96.86	99.00	1.3554
+99579165	eprbench	sacf3W	2026-06-06 02:22	a111acb	FINISHED	sacf,layer3,AdamW,bs18,maxep50	38	1.40	94.71	94.71	95.86	96.86	99.31	1.3740
+8592bc17	eprbench	sacf4W	2026-06-06 03:47	a111acb	FINISHED	sacf,layer4,AdamW,bs18,maxep50	46	1.69	94.71	94.71	96.17	97.16	99.31	1.3841
+5d4a0878	eprbench	sacf5W	2026-06-06 05:29	a111acb	FINISHED	sacf,layer5,AdamW,bs18,maxep50	29	1.07	94.56	94.56	95.48	96.70	99.00	1.3635
+757fc19b	eprbench	sacf6W	2026-06-06 06:34	a111acb	FINISHED	sacf,layer6,AdamW,bs18,maxep50	50	1.79	95.02	95.02	96.02	96.78	99.23	1.4082
+5475f06a	eprbench	sacf7W	2026-06-06 08:22	a111acb	FINISHED	sacf,layer7,AdamW,bs18,maxep50	27	0.99	94.79	94.79	96.02	97.16	99.31	1.3712
+86afd65c	eprbench_sacfablations	baseline	2026-06-06 14:41	42e6b64	FINISHED	none,AdamW,bs18,maxep50	33	1.08	93.87	93.87	95.86	96.78	99.23	1.4763
+e2c782e4	eprbench_sacfablations	sacf-original-l6	2026-06-06 15:47	42e6b64	FINISHED	sacf,layer6,AdamW,bs18,maxep50	28	1.02	94.18	94.18	96.09	97.32	99.16	1.3529
+91329482	eprbench_sacfablations	essacf-l6	2026-06-06 16:48	42e6b64	FINISHED	sacf+event_cues,variant=event_stability,layer6,AdamW,bs18,maxep50	37	1.36	94.56	94.56	95.79	96.70	99.23	1.4704
+fbada697	eprbench_sacfablations	sersacf-no-sem-no-evt	2026-06-06 18:10	42e6b64	FINISHED	sacf,variant=se_rsacf,layer6,AdamW,bs18,maxep50	35	1.17	94.56	94.56	95.71	96.55	98.85	1.4671
+ff8db4b3	eprbench_sacfablations	sersacf-sem-only	2026-06-06 19:20	42e6b64	FINISHED	sacf,variant=se_rsacf,layer6,AdamW,bs18,maxep50	45	1.52	94.33	94.33	95.94	96.78	99.23	1.4837
+3fa9efa9	eprbench_sacfablations	sersacf-evt-only	2026-06-06 20:52	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	36	1.22	94.48	94.48	95.86	96.86	99.31	1.5061
+13720cc8	eprbench_sacfablations	sersacf-sem-evt	2026-06-06 22:06	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	25	0.86	94.64	94.64	96.32	97.01	99.08	1.4876
+1686f42a	eprbench_sacfablations	sersacf-conv-gate	2026-06-06 22:58	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	43	1.43	93.95	93.95	95.94	96.93	99.31	1.4911
+16b5fc70	eprbench_sacfablations	sersacf-fastkan-gate	2026-06-07 00:24	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	29	0.99	94.33	94.33	95.48	97.01	99.31	1.4914
+4f698a10	eprbench_sacfablations	sersacf-fastkan-hidden32	2026-06-07 01:24	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	33	1.13	93.95	93.95	95.48	96.55	99.31	1.5007
+09fa5afa	eprbench_sacfablations	sersacf-layer4	2026-06-07 02:32	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer4,AdamW,bs18,maxep50	27	0.91	94.18	94.18	95.79	96.93	99.23	1.4756
+fd8bc699	eprbench_sacfablations	sersacf-layer8	2026-06-07 03:27	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer8,AdamW,bs18,maxep50	34	1.14	94.41	94.41	95.63	96.25	99.16	1.4882
+7e743456	eprbench_sacfablations	sersacf-layers468-mix	2026-06-07 04:36	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	34	1.18	94.79	94.79	95.63	96.78	99.16	1.4897
+221d5b7a	eprbench_sacfablations	sersacf-layers468-textgate	2026-06-07 05:48	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	26	0.90	94.56	94.56	95.56	96.63	99.23	1.4959
+5aca65df	eprbench_sacfablations	sersacf-dilated13	2026-06-07 06:42	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	41	1.41	93.87	93.87	95.71	97.01	99.16	1.4811
+b87f2279	eprbench_sacfablations	sersacf-adaptive-topk	2026-06-07 08:07	42e6b64	FINISHED	sacf+event_cues+adaptive_text_topk,variant=se_rsacf,layer6,AdamW,bs18,maxep50	50	1.72	94.33	94.33	96.17	97.32	99.23	1.5104
+5fc37b03	eprbench_sacfablations	sersacf-no-aux-reg	2026-06-07 09:51	42e6b64	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs18,maxep50	25	0.84	93.95	93.95	95.71	96.63	99.16	1.5083
+ac57b7a6	eprbench_sacfablations	sersacf-full	2026-06-07 10:42	42e6b64	FINISHED	sacf+event_cues+adaptive_text_topk,variant=se_rsacf,layer6,AdamW,bs18,maxep50	38	1.37	94.33	94.33	95.56	96.78	99.16	1.4715
+78bc7a01	eprbench_mods_ablation	baseline-smoke-test	2026-06-19 20:15	7bc39fd	RUNNING	none,AdamW,bs18,maxep50	1		92.64					1.7629
+e94be06e	default	adaptable-stoat-300	2026-06-19 20:20		FINISHED	none,bs?,maxep?		0.00						
+3e84c866	eprbench_mods_ablation	baseline	2026-06-19 20:20	7bc39fd	FAILED	none,AdamW,bs18,maxep10	9	0.35	93.95					1.5209
+b61a115c	default	fun-whale-384	2026-06-19 20:33		FINISHED	none,bs?,maxep?		0.00						
+ed714d9f	eprbench_mods_ablation	sacf-original-l6	2026-06-19 20:42	7bc39fd	FAILED	sacf,layer6,AdamW,bs18,maxep10		0.00						
+1cc115d5	eprbench_mods_ablation	scfm-original	2026-06-19 20:43	7bc39fd	FAILED	scfm,AdamW,bs18,maxep10		0.00						
+14fab568	eprbench_mods_ablation	sacf-scfm-original	2026-06-19 20:43	7bc39fd	FAILED	sacf+scfm,layer6,AdamW,bs18,maxep10		0.00						
+3d36ff9b	eprbench_mods_ablation	eats-only	2026-06-19 20:44	7bc39fd	RUNNING	event_aware_token_selector+event_cues,AdamW,bs18,maxep10	8		94.18					1.5606
+3d652fa9	eprbench_mods_ablation	baseline-fixed-test	2026-06-19 21:06	7bc39fd	FINISHED	none,AdamW,bs12,maxep1	1	0.07	92.41	92.41	94.79	96.25	99.23	1.6929
+c5bb277d	eprbench_mods_ablation	sacf-original-l6-fixed-test	2026-06-19 21:11	7bc39fd	FINISHED	sacf,layer6,AdamW,bs12,maxep1	1	0.08	91.80	91.80	94.48	96.48	99.23	1.5646
+5839c794	eprbench_mods_ablation	baseline	2026-06-19 21:16	7bc39fd	FINISHED	none,AdamW,bs12,maxep10	10	0.42	94.02	94.02	96.17	96.86	99.23	1.2871
+ea4f95f7	eprbench_mods_ablation	sacf-original-l6	2026-06-19 21:41	7bc39fd	FINISHED	sacf,layer6,AdamW,bs12,maxep10	10	0.47	93.79	93.79	95.63	96.55	99.23	1.1633
+fcd4fd01	eprbench_mods_ablation	scfm-original	2026-06-19 22:10	7bc39fd	FINISHED	scfm,AdamW,bs12,maxep10	10	0.44	94.48	94.48	96.09	97.24	99.08	1.2672
+4ff5ffe9	eprbench_mods_ablation	sacf-scfm-original	2026-06-19 22:36	7bc39fd	FINISHED	sacf+scfm,layer6,AdamW,bs12,maxep10	10	0.48	93.95	93.95	95.86	97.32	99.23	1.1945
+2b5dfaba	eprbench_mods_ablation	eats-only	2026-06-19 23:05	7bc39fd	FINISHED	event_aware_token_selector+event_cues,AdamW,bs12,maxep10	10	0.43	93.95	93.95	95.86	96.93	99.16	1.2863
+b04bb250	eprbench_mods_ablation	essacf-only	2026-06-19 23:32	7bc39fd	FINISHED	sacf+event_cues,variant=event_stability,layer6,AdamW,bs12,maxep10	10	0.48	93.87	93.87	95.71	96.63	99.08	1.2877
+8fe531d7	eprbench_mods_ablation	erscfm-only	2026-06-20 00:01	7bc39fd	FINISHED	scfm+event_cues,AdamW,bs12,maxep10	10	0.43	93.56	93.56	95.02	96.78	99.23	1.2893
+098d243d	eprbench_mods_ablation	eats-essacf	2026-06-20 00:27	7bc39fd	FINISHED	event_aware_token_selector+sacf+event_cues,variant=event_stability,layer6,AdamW,bs12,maxep10	10	0.49	93.79	93.79	95.71	97.16	99.16	1.2868
+53036ee7	eprbench_mods_ablation	eats-erscfm	2026-06-20 00:57	7bc39fd	FINISHED	event_aware_token_selector+scfm+event_cues,AdamW,bs12,maxep10	10	0.44	94.02	94.02	95.63	96.86	99.16	1.2887
+85ce2d9c	eprbench_mods_ablation	essacf-erscfm	2026-06-20 01:24	7bc39fd	FINISHED	sacf+scfm+event_cues,variant=event_stability,layer6,AdamW,bs12,maxep10	10	0.48	94.10	94.10	95.94	97.24	99.23	1.2771
+2f50709c	eprbench_mods_ablation	eats-essacf-erscfm	2026-06-20 01:53	7bc39fd	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,variant=event_stability,layer6,AdamW,bs12,maxep10	10	0.49	94.33	94.33	95.25	96.70	99.08	1.3056
+8c7ca216	eprbench_mods_ablation	eats-orig-sacfm	2026-06-20 02:23	7bc39fd	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,layer6,AdamW,bs12,maxep10	10	0.49	94.48	94.48	95.71	97.09	99.16	1.1877
+2e1fc53a	eprbench_mods_ablation	sersacf-base	2026-06-20 02:52	7bc39fd	FINISHED	sacf+event_cues,variant=se_rsacf,layer6,AdamW,bs12,maxep10	10	0.45	93.72	93.72	95.40	96.78	99.16	1.2522
+ab10367d	eprbench_mods_ablation	sersacf-full	2026-06-20 03:19	7bc39fd	FINISHED	sacf+event_cues+adaptive_text_topk,variant=se_rsacf,layer6,AdamW,bs12,maxep10	10	0.48	94.33	94.33	95.94	96.78	99.23	1.2537
+12186b5e	eprbench_mods_ablation	cross-spectral	2026-06-20 03:48	7bc39fd	FINISHED	cross_spectral,AdamW,bs12,maxep10	10	0.43	94.25	94.25	96.02	96.86	99.23	1.2288
+547ecf53	eprbench_mods_ablation	cross-spectral-sacf	2026-06-20 04:15	7bc39fd	FINISHED	sacf+cross_spectral,layer6,AdamW,bs12,maxep10	10	0.48	94.18	94.18	95.94	96.70	99.16	1.1846
+83041d9e	eprbench_mods_ablation	igr	2026-06-20 04:44	7bc39fd	FINISHED	igr,AdamW,bs12,maxep10	10	0.43	94.25	94.25	95.79	96.63	99.16	1.2516
+9beb05af	eprbench_mods_ablation	lgfp	2026-06-20 05:10	7bc39fd	FINISHED	lgfp,AdamW,bs12,maxep10	10	0.45	94.41	94.41	96.09	97.09	99.16	1.2667
+bec0a042	eprbench_mods_ablation	fbgw	2026-06-20 05:37	7bc39fd	FINISHED	fbgw,AdamW,bs12,maxep10	10	0.45	93.87	93.87	95.48	96.32	99.23	1.2047
+ab2b531c	eprbench_mods_ablation	bim	2026-06-20 06:05	7bc39fd	FINISHED	bim,AdamW,bs12,maxep10	10	0.46	93.56	93.56	95.71	96.25	99.08	1.3736
+6463814d	eprbench_mods_ablation	spm	2026-06-20 06:33	7bc39fd	FAILED	spm,AdamW,bs12,maxep10		0.00						
+df287362	eprbench_mods_ablation	freq-enhance	2026-06-20 06:33	7bc39fd	FINISHED	none,AdamW,bs12,maxep10	10	0.43	93.87	93.87	95.63	96.78	99.54	1.3001
+0ebc46d0	eprbench_mods_ablation	adaptive-topk	2026-06-20 06:59	7bc39fd	FINISHED	adaptive_text_topk,AdamW,bs12,maxep10	10	0.43	94.33	94.33	95.63	96.78	99.16	1.2808
+6ec3ee1c	eprbench_mods_ablation	temporal-fusion	2026-06-20 07:26	7bc39fd	FINISHED	temporal_fusion,AdamW,bs12,maxep10	10	0.42	93.33	93.33	95.10	97.01	99.23	1.3071
+b00e8cff	eprbench_mods_ablation	core-temporal-textdrop	2026-06-20 07:51	7bc39fd	FINISHED	event_aware_token_selector+sacf+scfm+event_cues,variant=event_stability,layer6,temporal,textdrop0.15,AdamW,bs12,maxep10	10	0.50	94.02	94.02	95.48	96.55	99.23	1.2384
+7e680dbd	eprbench_mods_ablation	spm	2026-06-20 08:22	7bc39fd	FAILED	spm,AdamW,bs6,maxep10		0.00						
+eb4c3574	eprbench_mods_ablation	spm	2026-06-20 08:23	7bc39fd	FINISHED	spm,AdamW,bs4,maxep10	10	0.87	92.87	92.87	95.48	97.01	98.93	0.4703
+9e4e3f5e	eprbench_v2	baselineW	2026-06-20 10:12	7bc39fd	FAILED	none,AdamW,bs18,maxep50	38	1.43	94.10					1.4720
+21696ada	eprbench_v2	sacfW	2026-06-20 11:38	7bc39fd	FAILED	sacf,layer6,AdamW,bs18,maxep50		0.00						
+39147c10	eprbench_v2	scfmW	2026-06-20 11:39	7bc39fd	FAILED	scfm,AdamW,bs18,maxep50		0.00						
+2b4e02ba	eprbench_v2	sacf-scfmW	2026-06-20 11:39	7bc39fd	FAILED	sacf+scfm,layer6,AdamW,bs18,maxep50		0.00						
+f1768edb	eprbench_v2	baselineW	2026-06-20 18:38	7bc39fd	FAILED	none,AdamW,bs18,maxep50	30	1.12	94.33					1.4827
+d24ffb7b	eprbench_v2	sacfW	2026-06-20 19:46	7bc39fd	FAILED	sacf,layer6,AdamW,bs18,maxep50		0.00						
+82a38c5b	eprbench_v2	scfmW	2026-06-20 19:46	7bc39fd	FAILED	scfm,AdamW,bs18,maxep50	45	1.72	94.10					1.4447
+7d540d07	eprbench_v2	sacf-scfmW	2026-06-20 21:30	7bc39fd	FAILED	sacf+scfm,layer6,AdamW,bs18,maxep50		0.00						
+bfc337a1	eprbench_v2	baselineW	2026-06-21 18:39	7bc39fd	FAILED	none,AdamW,bs18,maxep50	49	1.80	94.02					1.5049
+31257336	eprbench_sacfablations	baselineW	2026-06-22 11:11	7bc39fd	FAILED	none,AdamW,bs18,maxep50	33	1.18	94.25					1.4790
+c5bdc99b	eprbench_sacfablations	sacfW	2026-06-22 12:22	7bc39fd	FAILED	sacf,layer6,AdamW,bs18,maxep50		0.00						
+78bbc13d	eprbench_sacfablations	scfmW	2026-06-22 12:22	7bc39fd	FAILED	scfm,AdamW,bs18,maxep50	24	0.89	94.71					1.4601
+3f657c86	eprbench_sacfablations	sacf-scfmW	2026-06-22 13:16	7bc39fd	FAILED	sacf+scfm,layer6,AdamW,bs18,maxep50		0.00						
+8db99ca4	eprbench_sacfablations	baselineW	2026-06-22 13:18	7bc39fd	FAILED	none,AdamW,bs8,maxep50	31	1.48	94.25					0.9848
+6203787f	eprbench_sacfablations	sacfW	2026-06-22 14:47	7bc39fd	FAILED	sacf,layer6,AdamW,bs8,maxep50	49	2.53	94.10					0.8632
+178e8de1	eprbench_sacfablations	scfmW	2026-06-22 17:19	7bc39fd	FAILED	scfm,AdamW,bs8,maxep50	32	1.62	93.72					0.9365
+59cad5f8	eprbench_sacfablations	sacf-scfmW	2026-06-22 18:57	7bc39fd	FAILED	sacf+scfm,layer6,AdamW,bs8,maxep50	40	2.18	95.02					0.8787

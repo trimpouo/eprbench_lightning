@@ -14,6 +14,9 @@ from src.models.components.mods.sacf import (
 )
 from src.models.components.mods.scfm import SpatialChannelFeatureModulator
 from src.models.components.mods.sparse_prompt import SparsePromptModule
+from src.models.components.mods.temporal_event_aggregator import (
+    TemporalEventFrameAggregator,
+)
 
 __all__ = [
     "BrainInspiredModule",
@@ -28,4 +31,5 @@ __all__ = [
     "CosineSpectralFeatureAggregator",
     "FastKAN",
     "FastKANGate",
+    "TemporalEventFrameAggregator",
 ]

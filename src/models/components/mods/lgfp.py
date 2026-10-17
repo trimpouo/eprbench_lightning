@@ -8,7 +8,55 @@ Reference:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorch_wavelets import DWTForward, DWTInverse
+
+try:
+    from pytorch_wavelets import DWTForward, DWTInverse
+except ImportError:
+
+    class DWTForward(nn.Module):
+        """Pure-PyTorch 1-level 2D Haar DWT fallback when pytorch_wavelets is absent."""
+
+        def __init__(self, J: int = 1, wave: str = "haar", mode: str = "zero") -> None:
+            super().__init__()
+            self.J = J
+            self.wave = wave
+            self.mode = mode
+
+        def forward(self, x: torch.Tensor):
+            """Compute 1-level 2D Haar wavelet decomposition."""
+            if x.shape[-2] % 2 != 0 or x.shape[-1] % 2 != 0:
+                x = F.pad(x, (0, x.shape[-1] % 2, 0, x.shape[-2] % 2), mode="reflect")
+            x00 = x[:, :, 0::2, 0::2]
+            x01 = x[:, :, 0::2, 1::2]
+            x10 = x[:, :, 1::2, 0::2]
+            x11 = x[:, :, 1::2, 1::2]
+            ll = (x00 + x01 + x10 + x11) * 0.5
+            lh = (x00 + x01 - x10 - x11) * 0.5
+            hl = (x00 - x01 + x10 - x11) * 0.5
+            hh = (x00 - x01 - x10 + x11) * 0.5
+            high = torch.stack([lh, hl, hh], dim=2)
+            return ll, [high]
+
+    class DWTInverse(nn.Module):
+        """Pure-PyTorch 1-level 2D Haar IDWT fallback when pytorch_wavelets is absent."""
+
+        def __init__(self, wave: str = "haar", mode: str = "zero") -> None:
+            super().__init__()
+            self.wave = wave
+            self.mode = mode
+
+        def forward(self, coeffs):
+            """Reconstruct 2D feature map from (LL, [high]) Haar coefficients."""
+            ll, high_list = coeffs
+            high = high_list[0]
+            lh, hl, hh = high[:, :, 0], high[:, :, 1], high[:, :, 2]
+            b, c, h, w = ll.shape
+            out = ll.new_zeros((b, c, h * 2, w * 2))
+            out[:, :, 0::2, 0::2] = (ll + lh + hl + hh) * 0.5
+            out[:, :, 0::2, 1::2] = (ll + lh - hl - hh) * 0.5
+            out[:, :, 1::2, 0::2] = (ll - lh + hl - hh) * 0.5
+            out[:, :, 1::2, 1::2] = (ll - lh - hl + hh) * 0.5
+            return out
 
 
 class DiscreteWaveletTransform2D(nn.Module):

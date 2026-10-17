@@ -207,7 +207,7 @@ def load_model_and_features() -> Dict[str, Any]:
     recalls_per_query = np.zeros((len(positives_per_query), len(RECALL_VALUES)), dtype=bool)
     for q_idx, (pred, pos) in enumerate(zip(predictions, positives_per_query)):
         for r_i, n in enumerate(RECALL_VALUES):
-            recalls_per_query[q_idx, r_i] = np.any(np.in1d(pred[:n], pos))
+            recalls_per_query[q_idx, r_i] = np.any(np.isin(pred[:n], pos))
     overall_recalls = recalls_per_query.mean(axis=0) * 100
 
     return {
@@ -240,7 +240,7 @@ def render_query_results(query_idx: int, ctx: Dict[str, Any], top_k: int = TOP_K
 
     text_desc = test_dataset.text_descriptions.get(query_path, "")
 
-    hits = {n: bool(np.any(np.in1d(pred[:n], positives))) for n in RECALL_VALUES}
+    hits = {n: bool(np.any(np.isin(pred[:n], positives))) for n in RECALL_VALUES}
 
     st.subheader(f"Query #{query_idx} — Place {query_place_id}")
     col1, col2 = st.columns([1, 2])

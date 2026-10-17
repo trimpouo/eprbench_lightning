@@ -492,7 +492,7 @@ class EPRBenchLitModule(LightningModule):
             recalls = np.zeros(len(self.hparams.recall_values))
             for query_index, pred in enumerate(predictions):
                 for i, n in enumerate(self.hparams.recall_values):
-                    if np.any(np.in1d(pred[:n], positives_per_query[query_index])):
+                    if np.any(np.isin(pred[:n], positives_per_query[query_index])):
                         recalls[i:] += 1
                         break
 
